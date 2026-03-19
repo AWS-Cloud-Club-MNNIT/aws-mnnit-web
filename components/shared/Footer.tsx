@@ -3,7 +3,6 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  GithubLogoIcon,
   InstagramLogoIcon,
   LinkedinLogoIcon,
 } from "@phosphor-icons/react";
@@ -20,11 +19,10 @@ export function Footer() {
                 <Image
                   src="/club-logo.png"
                   alt="AWS Cloud Club Logo"
-                  fill
+                  fill  
+                  sizes="(max-width: 768px) 100vw, 64px"
                   className="object-contain"
-                  // Add this if your logo has dark colors that need to be visible on dark background
-                  style={{ filter: 'brightness(0) invert(1)' }} // This will make dark logos white
-                  // Remove the filter if your logo already has light colors
+                  style={{ filter: 'brightness(0) invert(1)' }}
                 />
               </div>
               <span className="font-sans font-bold text-xl tracking-tight text-white">

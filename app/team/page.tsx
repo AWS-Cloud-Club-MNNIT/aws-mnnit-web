@@ -43,6 +43,7 @@ export default async function TeamPage() {
                     src={member.image} 
                     alt={member.name} 
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                     className="w-full h-full object-cover object-center grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
                   />
                 </div>

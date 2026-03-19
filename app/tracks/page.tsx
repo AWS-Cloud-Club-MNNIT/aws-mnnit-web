@@ -36,7 +36,7 @@ export default async function TracksPage() {
           </div>
 
           {tracks.length === 0 ? (
-            <div className="text-center py-20 text-white/50 border border-white/5 rounded-3xl bg-white/[0.02]">
+            <div className="text-center py-20 text-white/50 border border-white/5 rounded-3xl bg-white/2">
               New tracks are being curated right now. Stay tuned!
             </div>
           ) : (
@@ -52,6 +52,7 @@ export default async function TracksPage() {
                         src={track.image} 
                         alt={track.title} 
                         fill
+                        sizes="64px"
                         className="w-full h-full object-cover" 
                       />
                     </div>
