@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { Cloud, List, X } from "@phosphor-icons/react";
+import { List, X } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 
 export function Navbar() {
@@ -103,7 +103,7 @@ export function Navbar() {
               {link.name}
             </Link>
           ))}
-          <Button className="w-full mt-4 bg-gradient-to-r from-[#7C3AED] to-[#00C2FF] text-white font-semibold border border-white/10 rounded-xl h-12 shadow-[0_0_15px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.6)] transition-all">
+          <Button className="w-full mt-4 bg-linear-to-r from-[#7C3AED] to-[#00C2FF] text-white font-semibold border border-white/10 rounded-xl h-12 shadow-[0_0_15px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.6)] transition-all">
             Join Us
           </Button>
         </motion.div>
