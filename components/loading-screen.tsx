@@ -33,7 +33,7 @@ export function LoadingScreen() {
       const timer = setTimeout(() => {
         sessionStorage.setItem('globalLoadingScreenComplete', 'true');
         setIsLoading(false);
-      }, 2000); // 2s total loading time
+      }, 3000); // 3s total loading time
       return () => clearTimeout(timer);
     }
   }, []);
@@ -128,23 +128,26 @@ export function LoadingScreen() {
             <svg viewBox="0 0 1024 1024" className="w-full h-full drop-shadow-[0_0_10px_rgba(124,58,237,0.2)] logo-draw-svg">
               <style>{`
                 @keyframes clipReveal {
-                  0% { clip-path: circle(0% at 50% 50%); }
-                  100% { clip-path: circle(75% at 50% 50%); }
+                  0% { clip-path: inset(0 100% 0 0); }
+                  100% { clip-path: inset(0 0% 0 0); }
                 }
                 @keyframes strokeToFill1 {
-                  0%, 70% { fill: rgba(36,46,61,0); stroke: rgba(168,85,247,1); stroke-width: 4; }
+                  0%, 65% { fill: rgba(36,46,61,0); stroke: rgba(168,85,247,1); stroke-width: 4; }
+                  70% { fill: rgba(36,46,61,0); stroke: rgba(168,85,247,1); stroke-width: 5; }
                   100% { fill: rgb(36,46,61); stroke: rgba(168,85,247,0); stroke-width: 0; }
                 }
                 @keyframes strokeToFill2 {
-                  0%, 70% { fill: rgba(254,255,255,0); stroke: rgba(168,85,247,1); stroke-width: 5; }
+                  0%, 65% { fill: rgba(254,255,255,0); stroke: rgba(168,85,247,1); stroke-width: 5; }
+                  70% { fill: rgba(254,255,255,0); stroke: rgba(168,85,247,1); stroke-width: 6; }
                   100% { fill: rgb(254,255,255); stroke: rgba(168,85,247,0); stroke-width: 0; }
                 }
                 @keyframes strokeToFill3 {
-                  0%, 70% { fill: rgba(253,253,253,0); stroke: rgba(168,85,247,1); stroke-width: 4; }
+                  0%, 65% { fill: rgba(253,253,253,0); stroke: rgba(168,85,247,1); stroke-width: 4; }
+                  70% { fill: rgba(253,253,253,0); stroke: rgba(168,85,247,1); stroke-width: 5; }
                   100% { fill: rgb(253,253,253); stroke: rgba(168,85,247,0); stroke-width: 0; }
                 }
                 .logo-draw-svg {
-                  animation: clipReveal 1.2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+                  animation: clipReveal 1.8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
                 }
                 .logo-path-1 {
                   fill: rgba(36,46,61,0);
@@ -152,7 +155,7 @@ export function LoadingScreen() {
                   stroke-width: 4;
                   stroke-linecap: round;
                   stroke-linejoin: round;
-                  animation: strokeToFill1 1.7s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+                  animation: strokeToFill1 2.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
                 }
                 .logo-path-2 {
                   fill: rgba(254,255,255,0);
@@ -160,7 +163,7 @@ export function LoadingScreen() {
                   stroke-width: 5;
                   stroke-linecap: round;
                   stroke-linejoin: round;
-                  animation: strokeToFill2 1.7s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+                  animation: strokeToFill2 2.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
                 }
                 .logo-path-3 {
                   fill: rgba(253,253,253,0);
@@ -168,7 +171,7 @@ export function LoadingScreen() {
                   stroke-width: 4;
                   stroke-linecap: round;
                   stroke-linejoin: round;
-                  animation: strokeToFill3 1.7s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+                  animation: strokeToFill3 2.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
                 }
               `}</style>
               <path className="logo-path-1"
@@ -187,7 +190,7 @@ export function LoadingScreen() {
             <motion.div
               initial={{ opacity: 0, y: 10, filter: "blur(5px)" }}
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ duration: 0.6, delay: 1.3, ease: "easeOut" }}
+              transition={{ duration: 0.6, delay: 2.0, ease: "easeOut" }}
               className="absolute bottom-[-10px] md:bottom-[-30px] w-full text-center"
             >
               <h1 className="font-mono text-sm md:text-xl font-bold tracking-[0.25em] text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-blue-200 to-purple-300 drop-shadow-[0_0_12px_rgba(168,85,247,0.5)] uppercase">
