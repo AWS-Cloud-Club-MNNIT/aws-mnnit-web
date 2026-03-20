@@ -12,37 +12,38 @@
   --card-foreground: oklch(0.95 0 0);
   --popover: #0B0F1A;
   --popover-foreground: oklch(0.95 0 0);
-  
+
   /* Primary: Neon Purple #7C3AED */
   --primary: #7C3AED;
   --primary-foreground: oklch(0.985 0 0);
-  
+
   /* Secondary: Shifting to a deeper/alternate purple instead of blue */
-  --secondary: #A78BFA; /* Violet/Light Purple */
+  --secondary: #A78BFA;
+  /* Violet/Light Purple */
   --secondary-foreground: oklch(0.1 0 0);
-  
+
   --muted: oklch(0.15 0 0);
   --muted-foreground: oklch(0.6 0 0);
   --accent: rgba(255, 255, 255, 0.05);
   --accent-foreground: oklch(0.95 0 0);
-  
+
   /* Optional Accent Red / AWS Orange */
-  --destructive: #EF4444; 
+  --destructive: #EF4444;
   --destructive-foreground: oklch(0.985 0 0);
-  --aws-orange: #FF9900; 
-  
+  --aws-orange: #FF9900;
+
   --border: rgba(255, 255, 255, 0.1);
   --input: rgba(255, 255, 255, 0.1);
   --ring: #7C3AED;
-  
+
   --chart-1: #7C3AED;
   --chart-2: #A78BFA;
   --chart-3: #FF9900;
   --chart-4: #EF4444;
   --chart-5: oklch(0.8 0.1 320);
-  
+
   --radius: 0.75rem;
-  
+
   --sidebar: #0B0F1A;
   --sidebar-foreground: oklch(0.95 0 0);
   --sidebar-primary: #7C3AED;
@@ -124,6 +125,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground font-sans selection:bg-primary/30;
   }
