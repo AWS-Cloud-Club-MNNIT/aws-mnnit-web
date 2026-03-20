@@ -125,8 +125,15 @@
   * {
     @apply border-border outline-ring/50;
   }
-
-  body {
+/*added to hide the scroll bar*/
+  html, body {
     @apply bg-background text-foreground font-sans selection:bg-primary/30;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
   }
 }
