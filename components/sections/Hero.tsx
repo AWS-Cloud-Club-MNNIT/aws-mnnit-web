@@ -1,57 +1,66 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRightIcon, GlobeHemisphereWestIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "../ui/badge";
-import Image from "next/image";
+import { AnimatedGrid } from "./AnimatedGrid";
 
 export function Hero() {
+  const router = useRouter();
+  const [isReady, setIsReady] = React.useState(false);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (sessionStorage.getItem("appLoadedHero")) {
+        setIsReady(true);
+      } else {
+        const timer = setTimeout(() => {
+          sessionStorage.setItem("appLoadedHero", "true");
+          setIsReady(true);
+        }, 2800); // Ready slightly before loader fully fades out (2.5s + 0.5s transition)
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
+
+  if (!isReady) {
+    // Render a non-animated empty structural placeholder during loading screen
+    return <section className="relative min-h-screen bg-transparent" />;
+  }
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden bg-white dark:bg-gray-900">
-      {/* Simple Gradient Background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute bottom-0 left-0 w-full h-[500px] bg-linear-to-t from-purple-100 via-purple-50 to-transparent dark:from-purple-900/20 dark:via-purple-900/10 dark:to-transparent" />
+    <section className="relative min-h-screen flex items-center pt-20 overflow-hidden bg-white dark:bg-gray-900 border-none">
+      {/* Full Right Side Animated Grid Background */}
+      <div className="absolute inset-y-0 right-0 w-full lg:w-[50%] z-0 pointer-events-none">
+        <AnimatedGrid />
       </div>
 
       <div className="container relative z-10 mx-auto px-6 max-w-7xl">
-        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+        <div className="flex flex-col lg:flex-row items-center lg:items-start gap-12 lg:gap-20">
           {/* Left Content */}
-          <div className="flex-1 text-center lg:text-left">
-            {/* Subtle Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="mb-8 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100/80 dark:bg-white/3 border border-gray-200 dark:border-white/8 backdrop-blur-md"
-            >
-              <span className="flex h-2 w-2 rounded-full bg-aws-orange animate-ping" />
-              <Badge className="text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-white/80 bg-transparent">
-                Welcome to the Future of Cloud
-              </Badge>
-            </motion.div>
-
+          <div className="flex-1 text-center lg:text-left py-10 lg:py-24 max-w-xl">
             {/* Headline */}
             <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-5xl md:text-6xl lg:text-7xl font-black font-sans tracking-tight text-gray-900 dark:text-white mb-6 leading-[1.1]"
+              initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ duration: 0.8, delay: 0.05, type: "spring", bounce: 0.4 }}
+              className="text-5xl md:text-6xl lg:text-[5.5rem] font-black font-sans tracking-tight text-gray-900 dark:text-white mb-8 leading-[1.1] drop-shadow-sm"
             >
               Learn.{" "}
               <span className="text-transparent bg-clip-text bg-linear-to-r from-[#7C3AED] via-[#A78BFA] to-[#7C3AED]">
                 Build.
               </span>{" "}
-              Grow with Cloud.
+              <br /> Grow with Cloud.
             </motion.h1>
 
             {/* Subtext */}
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-lg md:text-xl text-gray-600 dark:text-white/70 max-w-2xl mb-12 leading-relaxed lg:mx-0"
+              initial={{ opacity: 0, y: 20, filter: "blur(5px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ duration: 0.7, delay: 0.15, ease: "easeOut" }}
+              className="text-lg md:text-xl text-gray-600 dark:text-white/70 mb-12 leading-relaxed lg:mx-0"
             >
               AWS Cloud Club MNNIT is a student-led community where we explore
               cloud computing, build real-world projects, and grow together.
@@ -59,14 +68,15 @@ export function Hero() {
 
             {/* Action Buttons */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+              initial={{ opacity: 0, y: 20, filter: "blur(5px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
               className="flex flex-col sm:flex-row items-center lg:justify-start gap-4"
             >
               <Button
                 size="lg"
-                className="w-full sm:w-auto bg-linear-to-r from-[#7C3AED] to-[#5B21B6] border border-white/10 hover:opacity-90 rounded-full h-14 px-8 text-base font-semibold group flex items-center gap-2 shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_40px_rgba(124,58,237,0.6)] transition-all text-white"
+                className="w-full sm:w-auto bg-linear-to-r from-[#7C3AED] to-[#5B21B6] hover:opacity-90 transition-all border border-white/10 text-white rounded-full h-14 px-8 text-base font-semibold group flex items-center gap-2 shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_40px_rgba(124,58,237,0.6)]"
+                onClick={() => window.open('https://meetup.com/aws-cloud-club-at-nit-allahabad', '_blank')}
               >
                 Join the Community
                 <ArrowRightIcon
@@ -78,8 +88,9 @@ export function Hero() {
                 size="lg"
                 variant="outline"
                 className="w-full sm:w-auto bg-gray-100/80 dark:bg-white/5 backdrop-blur-md border-gray-300 dark:border-white/10 text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-white/10 rounded-full h-14 px-8 text-base font-semibold group flex items-center gap-2 shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:shadow-[0_0_15px_rgba(255,255,255,0.05)] hover:shadow-[0_0_30px_rgba(124,58,237,0.1)] transition-all"
+                onClick={() => router.push('/scd')}
               >
-                Explore Events
+                Explore SCD '26
                 <GlobeHemisphereWestIcon
                   weight="duotone"
                   className="transition-transform group-hover:rotate-12"
@@ -88,33 +99,10 @@ export function Hero() {
             </motion.div>
           </div>
 
-          {/* Right Content - Club Logo */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="flex-1 flex justify-center lg:justify-end"
-          >
-            <div className="relative w-full max-w-2xl aspect-square">
-              <div className="relative w-full h-full flex items-center justify-center">
-                <div className="w-full h-full rounded-full flex items-center justify-center">
-                  <Image
-                    src="/club-logo.png"
-                    alt="AWS Cloud Club MNNIT"
-                    width={1240}
-                    height={1240}
-                    className="rounded-full"
-                    priority
-                  />
-                </div>
-              </div>
-            </div>
-          </motion.div>
+          {/* Spacer to push out content if needed, but grid is absolute background */}
+          <div className="flex-1 hidden lg:block" />
         </div>
       </div>
-
-      {/* Decorative Bottom Gradient */}
-      <div className="absolute bottom-0 left-0 w-full h-32 bg-linear-to-t from-white via-white/50 to-transparent dark:from-gray-900 dark:via-gray-900/50 dark:to-transparent pointer-events-none" />
     </section>
   );
 }
