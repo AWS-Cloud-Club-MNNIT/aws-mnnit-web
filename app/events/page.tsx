@@ -28,8 +28,12 @@ export default async function EventsPage() {
           </div>
 
           {events.length === 0 ? (
-            <div className="text-center py-20 border border-white/[0.05] rounded-3xl bg-card/20">
-              <p className="text-white/60">Check back soon for upcoming events!</p>
+            <div className="flex flex-col items-center justify-center py-24 bg-card/20 border border-white/[0.05] rounded-3xl">
+              <CalendarBlank weight="duotone" className="w-12 h-12 text-white/20 mb-6" />
+              <h3 className="text-xl font-bold text-white mb-2">No Upcoming Events</h3>
+              <p className="text-white/50 text-center max-w-sm">
+                We are finalizing the schedule for our next batch of workshops and hackathons. Please check back later.
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
