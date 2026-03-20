@@ -128,22 +128,25 @@ export function LoadingScreen() {
             <svg viewBox="0 0 1024 1024" className="w-full h-full drop-shadow-[0_0_10px_rgba(124,58,237,0.2)] logo-draw-svg">
               <style>{`
                 @keyframes clipReveal {
-                  0% { clip-path: inset(0 100% 0 0); }
-                  100% { clip-path: inset(0 0% 0 0); }
+                  0% { clip-path: circle(0% at 50% 50%); }
+                  100% { clip-path: circle(75% at 50% 50%); }
                 }
                 @keyframes strokeToFill1 {
-                  0%, 65% { fill: rgba(36,46,61,0); stroke: rgba(168,85,247,1); stroke-width: 4; }
-                  70% { fill: rgba(36,46,61,0); stroke: rgba(168,85,247,1); stroke-width: 5; }
+                  0%, 60% { fill: rgba(36,46,61,0); stroke: rgba(168,85,247,0.9); stroke-width: 1.5; }
+                  65% { fill: rgba(36,46,61,0.1); stroke: rgba(168,85,247,0.8); stroke-width: 1.5; }
+                  85% { fill: rgba(36,46,61,0.7); stroke: rgba(168,85,247,0.3); stroke-width: 0.5; }
                   100% { fill: rgb(36,46,61); stroke: rgba(168,85,247,0); stroke-width: 0; }
                 }
                 @keyframes strokeToFill2 {
-                  0%, 65% { fill: rgba(254,255,255,0); stroke: rgba(168,85,247,1); stroke-width: 5; }
-                  70% { fill: rgba(254,255,255,0); stroke: rgba(168,85,247,1); stroke-width: 6; }
+                  0%, 60% { fill: rgba(254,255,255,0); stroke: rgba(168,85,247,0.9); stroke-width: 2; }
+                  65% { fill: rgba(254,255,255,0.1); stroke: rgba(168,85,247,0.8); stroke-width: 2; }
+                  85% { fill: rgba(254,255,255,0.7); stroke: rgba(168,85,247,0.3); stroke-width: 0.5; }
                   100% { fill: rgb(254,255,255); stroke: rgba(168,85,247,0); stroke-width: 0; }
                 }
                 @keyframes strokeToFill3 {
-                  0%, 65% { fill: rgba(253,253,253,0); stroke: rgba(168,85,247,1); stroke-width: 4; }
-                  70% { fill: rgba(253,253,253,0); stroke: rgba(168,85,247,1); stroke-width: 5; }
+                  0%, 60% { fill: rgba(253,253,253,0); stroke: rgba(168,85,247,0.9); stroke-width: 1.5; }
+                  65% { fill: rgba(253,253,253,0.1); stroke: rgba(168,85,247,0.8); stroke-width: 1.5; }
+                  85% { fill: rgba(253,253,253,0.7); stroke: rgba(168,85,247,0.3); stroke-width: 0.5; }
                   100% { fill: rgb(253,253,253); stroke: rgba(168,85,247,0); stroke-width: 0; }
                 }
                 .logo-draw-svg {
@@ -151,24 +154,24 @@ export function LoadingScreen() {
                 }
                 .logo-path-1 {
                   fill: rgba(36,46,61,0);
-                  stroke: rgba(168,85,247,1);
-                  stroke-width: 4;
+                  stroke: rgba(168,85,247,0.9);
+                  stroke-width: 1.5;
                   stroke-linecap: round;
                   stroke-linejoin: round;
                   animation: strokeToFill1 2.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
                 }
                 .logo-path-2 {
                   fill: rgba(254,255,255,0);
-                  stroke: rgba(168,85,247,1);
-                  stroke-width: 5;
+                  stroke: rgba(168,85,247,0.9);
+                  stroke-width: 2;
                   stroke-linecap: round;
                   stroke-linejoin: round;
                   animation: strokeToFill2 2.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
                 }
                 .logo-path-3 {
                   fill: rgba(253,253,253,0);
-                  stroke: rgba(168,85,247,1);
-                  stroke-width: 4;
+                  stroke: rgba(168,85,247,0.9);
+                  stroke-width: 1.5;
                   stroke-linecap: round;
                   stroke-linejoin: round;
                   animation: strokeToFill3 2.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
