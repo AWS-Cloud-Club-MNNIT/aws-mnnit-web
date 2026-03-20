@@ -147,15 +147,17 @@ export function AnimatedGrid() {
                 
                {/* AWS Logo inside cell index 47 (Row 7, Col 5 0-indexed - very bottom right) */}
                 {i === 47 && (
-                  <div className="absolute inset-0 z-20 flex items-center justify-center p-3">
-                    <div className="relative w-full h-full flex items-center justify-center group/logo">
-                      <Image 
-                        src="/AWS.png" 
-                        alt="AWS Logo" 
-                        fill
-                        className="object-contain opacity-80 transition-all duration-500 group-hover/logo:opacity-100 group-hover/logo:scale-110"
-                        priority
-                      />
+                  <div className="absolute inset-0 z-20 flex items-end justify-end p-2">
+                    <div className="relative w-24 h-24 flex items-center justify-center group/logo">
+                        <Image
+                          src="/AWS.png"
+                          alt="AWS Logo"
+                          width={80}
+                          height={80}
+                          className="object-contain transition-all duration-500 group-hover/logo:scale-110"
+                          style={{ filter: 'none' }}
+                          priority
+                        />
                     </div>
                   </div>
                 )}
