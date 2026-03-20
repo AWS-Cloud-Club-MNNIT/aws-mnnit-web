@@ -4,7 +4,7 @@ import Team from "@/models/team"
 import { Navbar } from "@/components/shared/Navbar"
 import { Footer } from "@/components/shared/Footer"
 import Image from "next/image"
-import { GithubLogo, LinkedinLogo, TwitterLogo } from "@phosphor-icons/react/dist/ssr"
+import { GithubLogo, LinkedinLogo, TwitterLogo, UsersThree } from "@phosphor-icons/react/dist/ssr"
 
 export const dynamic = "force-dynamic"
 
@@ -32,7 +32,13 @@ export default async function TeamPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {members.length === 0 ? (
-               <p className="col-span-full text-center text-white/50">No team members populated yet.</p>
+              <div className="col-span-full flex flex-col items-center justify-center py-24 bg-card/20 border border-white/[0.05] rounded-3xl">
+                <UsersThree weight="duotone" className="w-12 h-12 text-white/20 mb-6" />
+                <h3 className="text-xl font-bold text-white mb-2">Team Assembly in Progress</h3>
+                <p className="text-white/50 text-center max-w-sm">
+                  We are currently onboarding the core architects and community leaders. The roster will be published shortly.
+                </p>
+              </div>
             ) : members.map((member) => (
               <div 
                 key={member._id.toString()} 
