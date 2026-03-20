@@ -1,0 +1,17 @@
+{
+  "name": "Prof. Mayank Pandey",
+  "designation": "Professor & Head",
+  "aws_designation": "Chairman",
+  "department": "Computer Science & Engineering",
+  "institution": "Motilal Nehru National Institute of Technology Allahabad",
+  "city": "Prayagraj",
+  "country": "India",
+  "pincode": "211004",
+  "email": "mayankpandey@mnnit.ac.in",
+  "redirect_url":"https://mnnit.ac.in/profile/mayankpandey",
+  "phone": {
+    "office": "+91-532-2271362",
+    "residence": "+91-532-2271755",
+    "mobile": "+91-9935239332"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "Dr. Shashank",
+  "designation": "Associate Professor",
+  "aws_designation": "Faculty Member",
+  "department": "Computer Science & Engineering",
+  "institution": "Motilal Nehru National Institute of Technology Allahabad",
+  "city": "Prayagraj",
+  "country": "India",
+  "pincode": "211004",
+  "email": "shashank12@mnnit.ac.in",
+  "redirect_url":"https://mnnit.ac.in/profile/shashank12",
+  "phone": {
+    "office": "+91-9984905199",
+    "mobile": "+91-9984905199"
+  }
+}

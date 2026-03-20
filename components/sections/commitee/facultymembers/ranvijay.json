@@ -1,0 +1,16 @@
+{
+  "name": "Dr. Ranvijay",
+  "designation": "Associate Professor",
+  "aws_designation": "Faculty Member",
+  "department": "Computer Science & Engineering",
+  "institution": "Motilal Nehru National Institute of Technology Allahabad",
+  "city": "Prayagraj",
+  "country": "India",
+  "pincode": "211004",
+  "email": "ranvijay@mnnit.ac.in",
+  "redirect_url":"https://www.mnnit.ac.in/profile/ranvijay",
+  "phone": {
+    "office": "+91-532-2271368",
+    "mobile": "+91-9695167607"
+  }
+}

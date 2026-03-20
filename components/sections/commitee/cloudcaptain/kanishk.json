@@ -1,0 +1,14 @@
+{
+  "name": "Mr. Kanishk Agrawal",
+  "aws_designation": "Cloud Captain",
+  "department": "Computer Science & Engineering",
+  "institution": "Motilal Nehru National Institute of Technology Allahabad",
+  "city": "Prayagraj",
+  "country": "India",
+  "pincode": "211004",
+  "email": "kanishk.20233526@mnnit.ac.in",
+  "redirect_url":"https://www.linkedin.com/in/kanishkagrawal1/",
+  "phone": {
+    "mobile": "+91 70239 05789"
+  }
+}
