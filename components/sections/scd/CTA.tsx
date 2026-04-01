@@ -1,11 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 export function CTA() {
-  const router = useRouter();
 
   return (
     <section className="py-24 container mx-auto px-6 max-w-5xl relative z-10">
@@ -24,19 +22,31 @@ export function CTA() {
 
         <div className="relative z-10 flex flex-col items-center">
           <h2 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight">
-            Don't Miss Out.
+            Don&apos;t Miss Out.
           </h2>
           <p className="text-lg md:text-xl text-white/70 mb-12 max-w-2xl mx-auto leading-relaxed">
             Tickets are extremely limited and will sell out quickly. Secure your place
             at the frontier of cloud computing and build your network.
           </p>
-          <Button
-            size="lg"
-            onClick={() => router.push('/register')}
-            className="bg-white text-black hover:bg-white/90 rounded-full h-16 px-12 text-lg font-bold shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(255,255,255,0.4)] transition-all group-hover:-translate-y-1"
-          >
-            Register For SCD 2026
-          </Button>
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+            <Button
+              size="lg"
+              onClick={() => window.open('https://unstop.com/workshops-webinars/aws-student-community-day-mnnit-motilal-nehru-national-institute-of-technology-1667724', '_blank')}
+              className="bg-white text-black hover:bg-white/90 rounded-full h-16 px-10 text-lg font-bold shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(255,255,255,0.4)] transition-all group-hover:-translate-y-1 w-full sm:w-auto"
+            >
+              Register on Unstop
+            </Button>
+            <Button
+              size="lg"
+              onClick={() => window.open('https://www.meetup.com/aws-cloud-club-at-nit-allahabad/events/314034890/', '_blank')}
+              className="bg-[#e0393e] text-white hover:bg-[#e0393e]/90 rounded-full h-16 px-10 text-lg font-bold shadow-[0_0_40px_rgba(224,57,62,0.2)] hover:shadow-[0_0_60px_rgba(224,57,62,0.4)] transition-all group-hover:-translate-y-1 w-full sm:w-auto"
+            >
+              Register on Meetup
+            </Button>
+          </div>
+          <p className="text-white/70 text-sm mt-6 text-center max-w-lg font-medium">
+            * Note: It is <strong>mandatory</strong> to register on both Unstop and Meetup to secure your spot.
+          </p>
         </div>
       </motion.div>
     </section>

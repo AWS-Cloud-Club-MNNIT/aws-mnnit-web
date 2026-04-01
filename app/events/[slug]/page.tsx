@@ -67,9 +67,21 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
               <div className="bg-card/20 border border-white/[0.05] rounded-3xl p-6 sticky top-32">
                 <h4 className="text-lg font-bold text-white mb-6">Registration</h4>
                 <p className="text-white/60 text-sm mb-6">RSVP now to secure your spot. Note that some events have limited capacity.</p>
-                <Button className="w-full bg-secondary text-black hover:bg-secondary/90 font-bold h-12 rounded-xl mb-4">
-                  Register Now
+                <Button 
+                  className="w-full bg-white text-black hover:bg-white/90 font-bold h-12 rounded-xl mb-3"
+                  onClick={() => window.open('https://unstop.com/workshops-webinars/aws-student-community-day-mnnit-motilal-nehru-national-institute-of-technology-1667724', '_blank')}
+                >
+                  Register on Unstop
                 </Button>
+                <Button 
+                  className="w-full bg-[#e0393e] text-white hover:bg-[#e0393e]/90 font-bold h-12 rounded-xl mb-4"
+                  onClick={() => window.open('https://www.meetup.com/aws-cloud-club-at-nit-allahabad/events/314034890/', '_blank')}
+                >
+                  Register on Meetup
+                </Button>
+                <p className="text-white/70 text-xs mb-6 text-center">
+                  * Note: It is <strong>mandatory</strong> to register on both Unstop and Meetup to secure your spot.
+                </p>
                 <Button variant="outline" className="w-full bg-transparent border-white/10 text-white hover:bg-white/5 h-12 rounded-xl flex items-center gap-2">
                   <ShareNetwork className="w-5 h-5" /> Share Event
                 </Button>

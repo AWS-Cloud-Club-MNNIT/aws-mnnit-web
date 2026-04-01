@@ -2,26 +2,28 @@
 
 import * as React from "react"
 import { motion } from "framer-motion"
-import { CalendarCheck, Article, Users, TrendUp, Database, CheckCircle, Cloud } from "@phosphor-icons/react"
+import { CalendarCheck, Article, Users, TrendUp, Database, CheckCircle, Cloud, Handshake } from "@phosphor-icons/react"
 import Link from "next/link"
 
 export default function AdminDashboard() {
-  const [stats, setStats] = React.useState({ events: 0, blogs: 0, team: 0 })
+  const [stats, setStats] = React.useState({ events: 0, blogs: 0, team: 0, sponsors: 0 })
   const [loading, setLoading] = React.useState(true)
 
   React.useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [eventsRes, blogsRes, teamRes] = await Promise.all([
+        const [eventsRes, blogsRes, teamRes, sponsorsRes] = await Promise.all([
           fetch("/api/event").then(res => res.json()),
           fetch("/api/blog").then(res => res.json()),
           fetch("/api/team").then(res => res.json()),
+          fetch("/api/sponsor").then(res => res.json()),
         ])
         
         setStats({
           events: Array.isArray(eventsRes) ? eventsRes.length : 0,
           blogs: Array.isArray(blogsRes) ? blogsRes.length : 0,
           team: Array.isArray(teamRes) ? teamRes.length : 0,
+          sponsors: Array.isArray(sponsorsRes) ? sponsorsRes.length : 0,
         })
       } catch (error) {
         console.error("Error fetching stats", error)
@@ -36,6 +38,7 @@ export default function AdminDashboard() {
     { title: "Total Events", value: stats.events, icon: <CalendarCheck weight="fill" className="w-8 h-8 text-[#FF9900]" />, bg: "bg-[#232F3E]", border: "border-[#FF9900]/30 hover:border-[#FF9900]/80", link: "/admin/events", trend: "+2 this week" },
     { title: "Published Blogs", value: stats.blogs, icon: <Article weight="fill" className="w-8 h-8 text-[#0073BB]" />, bg: "bg-[#232F3E]", border: "border-[#0073BB]/30 hover:border-[#0073BB]/80", link: "/admin/blogs", trend: "Active readers" },
     { title: "Core Members", value: stats.team, icon: <Users weight="fill" className="w-8 h-8 text-[#16A34A]" />, bg: "bg-[#232F3E]", border: "border-[#16A34A]/30 hover:border-[#16A34A]/80", link: "/admin/team", trend: "Fully staffed" },
+    { title: "Sponsors & Partners", value: stats.sponsors, icon: <Handshake weight="fill" className="w-8 h-8 text-[#7C3AED]" />, bg: "bg-[#232F3E]", border: "border-[#7C3AED]/30 hover:border-[#7C3AED]/80", link: "/admin/sponsors", trend: "Growing network" },
   ]
 
   return (
@@ -45,7 +48,7 @@ export default function AdminDashboard() {
         <p className="text-white/50 font-medium text-lg">Welcome to your AWS Cloud Club command center.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((card, index) => (
           <motion.div
             key={card.title}

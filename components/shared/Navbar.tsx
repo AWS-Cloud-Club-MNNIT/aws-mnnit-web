@@ -44,6 +44,7 @@ export function Navbar() {
     { name: "Team", href: "/team" },
     { name: "Committee", href: "/committee" },
     { name: "Blogs", href: "/blogs" },
+    { name: "Sponsors", href: "/sponsors" },
   ];
 
   return (

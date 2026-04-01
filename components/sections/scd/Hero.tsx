@@ -2,16 +2,9 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import {
-  ClockCountdown,
-  MapPinLine,
-  UsersThree,
-  ArrowRight,
-} from "@phosphor-icons/react";
-import { useRouter } from "next/navigation";
+import { ClockCountdown, MapPinLine, UsersThree, ArrowRight } from "@phosphor-icons/react";
 
 export function Hero() {
-  const router = useRouter();
 
   return (
     <section className="relative pt-40 pb-20 container mx-auto px-6 max-w-6xl text-center z-10 flex flex-col items-center">
@@ -40,7 +33,7 @@ export function Hero() {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FF9900]"></span>
           </span>
           <span className="text-white/80 text-xs font-bold tracking-[0.2em] uppercase">
-            MNNIT's Largest Cloud Conference
+            MNNIT&apos;s Largest Cloud Conference
           </span>
         </motion.div>
 
@@ -77,25 +70,43 @@ export function Hero() {
             hidden: { opacity: 0, y: 20 },
             visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
           }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-12 w-full sm:w-auto"
+          className="flex flex-col items-center justify-center mb-12 w-full"
         >
-          <Button
-            size="lg"
-            onClick={() => router.push('/register')}
-            className="group relative w-full sm:w-auto bg-white text-black hover:bg-white/90 rounded-full h-14 px-10 text-base font-bold shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] transition-all overflow-hidden"
-          >
-            <span className="relative z-10 flex items-center gap-2">
-              Get Tickets Now For Free
-              <ArrowRight weight="bold" className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </span>
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="w-full sm:w-auto bg-white/5 backdrop-blur-md border-white/10 text-white hover:bg-white/10 rounded-full h-14 px-10 text-base font-bold transition-all"
-          >
-            Become a Sponsor
-          </Button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto mb-4">
+            <Button
+              size="lg"
+              onClick={() => window.open('https://unstop.com/workshops-webinars/aws-student-community-day-mnnit-motilal-nehru-national-institute-of-technology-1667724', '_blank')}
+              className="group relative w-full sm:w-auto bg-white text-black hover:bg-white/90 rounded-full h-14 px-8 text-sm font-bold shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] transition-all overflow-hidden"
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                Register on Unstop
+                <ArrowRight weight="bold" className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </span>
+            </Button>
+
+            <Button
+              size="lg"
+              onClick={() => window.open('https://www.meetup.com/aws-cloud-club-at-nit-allahabad/events/314034890/', '_blank')}
+              className="group relative w-full sm:w-auto bg-[#e0393e] text-white hover:bg-[#e0393e]/90 rounded-full h-14 px-8 text-sm font-bold shadow-[0_0_30px_rgba(224,57,62,0.15)] hover:shadow-[0_0_40px_rgba(224,57,62,0.3)] transition-all overflow-hidden"
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                Register on Meetup
+                <ArrowRight weight="bold" className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </span>
+            </Button>
+
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => window.open('https://forms.gle/9QfnYXeLU7Dmnqph6', '_blank')}
+              className="w-full sm:w-auto bg-white/5 backdrop-blur-md border-white/10 text-white hover:bg-white/10 rounded-full h-14 px-8 text-sm font-bold transition-all"
+            >
+              Become a Sponsor
+            </Button>
+          </div>
+          <p className="text-[#8892B0] text-sm mt-2 text-center max-w-lg font-medium">
+            * Note: It is <strong>mandatory</strong> to register on both Unstop and Meetup to secure your spot.
+          </p>
         </motion.div>
 
         {/* floating bar metadata */}
