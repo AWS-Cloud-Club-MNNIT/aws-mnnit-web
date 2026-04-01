@@ -9,7 +9,8 @@ import {
   Article, 
   Users,
   SignOut,
-  Cloud
+  Cloud,
+  Handshake
 } from "@phosphor-icons/react"
 import { motion } from "framer-motion"
 import { logoutAction } from "@/app/admin/login/actions"
@@ -21,6 +22,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: "Overview", href: "/admin", icon: <SquaresFour weight="fill" className="w-5 h-5" /> },
     { name: "Tracks", href: "/admin/tracks", icon: <Article weight="fill" className="w-5 h-5" /> },
     { name: "Events", href: "/admin/events", icon: <CalendarCheck weight="fill" className="w-5 h-5" /> },
+    { name: "Sponsors", href: "/admin/sponsors", icon: <Handshake weight="fill" className="w-5 h-5" /> },
     { name: "Blogs", href: "/admin/blogs", icon: <Article weight="fill" className="w-5 h-5" /> },
     { name: "Team", href: "/admin/team", icon: <Users weight="fill" className="w-5 h-5" /> },
   ]

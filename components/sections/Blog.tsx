@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { ArrowRight, BookOpenText } from "@phosphor-icons/react"
 import { Card, CardContent } from "@/components/ui/card"
@@ -30,51 +31,95 @@ const blogs = [
 ]
 
 export function Blog() {
-  return (
-    <section id="blogs" className="py-24 bg-background border-t border-white/[0.05]">
-      <div className="container mx-auto px-6 max-w-6xl">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
-          <div>
-            <h2 className="text-sm font-semibold text-secondary uppercase tracking-widest mb-3">Resources</h2>
-            <h3 className="text-3xl md:text-5xl font-bold text-white tracking-tight">Latest from the Blog.</h3>
-          </div>
-          <button className="text-white/60 hover:text-white font-medium flex items-center gap-2 transition-colors">
-            Read all posts <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
+  const router = useRouter();
 
-        <div className="grid md:grid-cols-3 gap-6">
-          {blogs.map((blog, index) => (
-            <motion.div
-              key={index}
+  return (
+    <section id="blogs" className="py-24 md:py-32 bg-background relative overflow-hidden">
+      {/* Background Decorative Element */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      
+      <div className="container mx-auto px-6 max-w-7xl relative z-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-20 gap-8">
+          <div className="max-w-2xl">
+            <motion.h2 
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="text-sm font-bold text-[#A78BFA] uppercase tracking-[0.2em] mb-4"
+            >
+              Resources & Insights
+            </motion.h2>
+            <motion.h3 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
+              transition={{ delay: 0.1 }}
+              className="text-4xl md:text-6xl font-black text-white tracking-tight leading-[1.1]"
             >
-               <Card className="group h-full bg-card/20 border-white/[0.05] hover:border-white/20 transition-all cursor-pointer">
-                <CardContent className="p-8 flex flex-col h-full">
-                  <div className="flex items-center justify-between mb-6">
-                    <span className={`text-xs font-bold rounded-full ${blog.color}`}>
-                      {blog.tag}
-                    </span>
-                    <BookOpenText className="w-6 h-6 text-white/30 group-hover:text-secondary transition-colors" />
-                  </div>
+              Latest from the <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white/80 to-white/40">Blog.</span>
+            </motion.h3>
+          </div>
+          <motion.button 
+            onClick={() => router.push('/blogs')}
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="group flex items-center gap-3 px-8 py-4 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 text-white font-semibold text-sm"
+          >
+            Read all posts 
+            <ArrowRight weight="bold" className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </motion.button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8">
+          {blogs.map((blog, index) => {
+            const isFeatured = index === 0;
+            return (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1, duration: 0.6, ease: "easeOut" }}
+                className={isFeatured ? "md:col-span-7" : "md:col-span-5"}
+              >
+                <Card 
+                  onClick={() => router.push('/coming-soon')}
+                  className="group relative h-full bg-[#0D0F16]/50 backdrop-blur-sm border-white/[0.05] hover:border-[#A78BFA]/30 transition-all duration-500 cursor-pointer overflow-hidden rounded-[2rem]"
+                >
+                  {/* Hover Glow Effect */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#7C3AED]/0 via-[#7C3AED]/0 to-[#7C3AED]/0 group-hover:from-[#7C3AED]/5 group-hover:to-transparent transition-all duration-700" />
                   
-                  <h4 className="text-xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-white/70 transition-all">
-                    {blog.title}
-                  </h4>
-                  <p className="text-white/50 mb-8 flex-1 text-sm leading-relaxed">
-                    {blog.excerpt}
-                  </p>
-                  
-                  <div className="text-xs font-semibold text-white/30 uppercase tracking-widest mt-auto border-t border-white/[0.05] pt-4">
-                    {blog.date}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+                  <CardContent className={`p-8 md:p-10 lg:p-12 flex flex-col h-full relative z-10 ${isFeatured ? 'justify-center' : ''}`}>
+                    <div className="flex items-center justify-between mb-8">
+                      <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-white/10 bg-white/5 text-white/80 group-hover:border-[#A78BFA]/20 group-hover:bg-[#A78BFA]/10 group-hover:text-[#A78BFA] transition-all duration-300`}>
+                        {blog.tag}
+                      </span>
+                      <BookOpenText weight="duotone" className="w-8 h-8 text-white/20 group-hover:text-[#A78BFA] transition-all duration-500 transform group-hover:rotate-12" />
+                    </div>
+                    
+                    <h4 className={`${isFeatured ? 'text-2xl md:text-4xl' : 'text-xl md:text-2xl'} font-bold text-white mb-6 leading-tight group-hover:text-[#A78BFA] transition-colors duration-300`}>
+                      {blog.title}
+                    </h4>
+                    
+                    <p className={`text-[#8892B0] mb-10 text-base leading-relaxed ${isFeatured ? 'max-w-md' : ''}`}>
+                      {blog.excerpt}
+                    </p>
+                    
+                    <div className="flex items-center justify-between mt-auto pt-8 border-t border-white/[0.05]">
+                      <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">
+                        {blog.date}
+                      </span>
+                      <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 -translate-x-4 group-hover:translate-x-0">
+                        <ArrowRight className="w-4 h-4 text-[#A78BFA]" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

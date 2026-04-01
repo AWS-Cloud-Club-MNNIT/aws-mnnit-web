@@ -28,8 +28,12 @@ export default async function BlogsPage() {
           </div>
 
           {blogs.length === 0 ? (
-            <div className="text-center py-20 border border-white/[0.05] rounded-3xl bg-card/20">
-              <p className="text-white/60">Check back soon for engineering blogs!</p>
+            <div className="flex flex-col items-center justify-center py-24 bg-card/20 border border-white/[0.05] rounded-3xl">
+              <BookOpenText weight="duotone" className="w-12 h-12 text-white/20 mb-6" />
+              <h3 className="text-xl font-bold text-white mb-2">Engineering Insights</h3>
+              <p className="text-white/50 text-center max-w-sm">
+                Our community is busy writing deep-dive tutorials and architecture breakdowns. Stay tuned for new articles.
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

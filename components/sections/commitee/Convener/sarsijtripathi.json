@@ -1,0 +1,15 @@
+{
+  "name": "Dr. Sarsij Tripathi",
+  "designation": "Associate Professor",
+  "aws_designation": "Convener",
+  "department": "Computer Science & Engineering",
+  "institution": "Motilal Nehru National Institute of Technology Allahabad",
+  "city": "Prayagraj",
+  "country": "India",
+  "pincode": "211004",
+  "email": "sarsij@mnnit.ac.in",
+  "redirect_url":"https://mnnit.ac.in/profile/sarsij",
+  "phone": {
+    "office": "+91-9589859117"
+  }
+}

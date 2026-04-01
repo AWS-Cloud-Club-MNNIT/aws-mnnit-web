@@ -5,7 +5,7 @@ import Team from "@/models/team";
 export async function GET() {
   try {
     await connectDB();
-    const members = await Team.find().sort({ createdAt: 1 });
+    const members = await Team.find().sort({ priority: 1, createdAt: 1 });
     return NextResponse.json(members);
   } catch (error) {
     console.error("Failed to fetch team:", error);
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     await connectDB();
     
-    if (!body.name || !body.role || !body.image) {
+    if (!body.name || !body.role || !body.image || !body.category || body.priority === undefined) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 

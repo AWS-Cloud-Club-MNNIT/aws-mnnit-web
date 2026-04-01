@@ -1,0 +1,16 @@
+{
+  "name": "Dr. Ashish Maurya",
+  "designation": "Assistant Professor",
+  "aws_designation": "Faculty Member",
+  "department": "Computer Science & Engineering",
+  "institution": "Motilal Nehru National Institute of Technology Allahabad",
+  "city": "Prayagraj",
+  "country": "India",
+  "pincode": "211004",
+  "email": "ashishmaurya@mnnit.ac.in",
+  "redirect_url":"https://mnnit.ac.in/profile/ashishmaurya",
+  "phone": {
+    "office": "+91-532-2271351",
+    "mobile": "+91-7905953001"
+  }
+}

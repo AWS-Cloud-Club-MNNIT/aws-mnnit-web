@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import connectDB from "@/lib/db"
 import Track from "@/models/track"
 import Link from "next/link"
+import { MapTrifold } from "@phosphor-icons/react/dist/ssr"
 
 // Dynamic Server Component to fetch fresh tracks
 export const dynamic = 'force-dynamic'
@@ -36,8 +37,12 @@ export default async function TracksPage() {
           </div>
 
           {tracks.length === 0 ? (
-            <div className="text-center py-20 text-white/50 border border-white/5 rounded-3xl bg-white/2">
-              New tracks are being curated right now. Stay tuned!
+            <div className="flex flex-col items-center justify-center py-24 bg-card/20 border border-white/[0.05] rounded-3xl mb-12">
+              <MapTrifold weight="duotone" className="w-12 h-12 text-white/20 mb-6" />
+              <h3 className="text-xl font-bold text-white mb-2">Curating Learning Paths</h3>
+              <p className="text-white/50 text-center max-w-sm">
+                Our industry experts are designing specialized learning paths to accelerate your tech career. New tracks will be available soon.
+              </p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

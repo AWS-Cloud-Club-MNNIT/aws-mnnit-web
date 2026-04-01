@@ -23,7 +23,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const body = await req.json();
     await connectDB();
     
-    const updatedTeam = await Team.findByIdAndUpdate(id, body, { new: true });
+    const updatedTeam = await Team.findByIdAndUpdate(id, body, { new: true, runValidators: true });
     if (!updatedTeam) {
       return NextResponse.json({ error: "Team member not found" }, { status: 404 });
     }
