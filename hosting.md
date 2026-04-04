@@ -6,45 +6,175 @@
 
 ---
 
-## Table of Contents
+## ⚡ Minimum Recommended Instance
 
-1. [Server Setup](#1-server-setup)
-2. [Install Docker](#2-install-docker)
-3. [Upload / Clone the Project](#3-upload--clone-the-project)
-4. [Configure Environment Variables](#4-configure-environment-variables)
-5. [Build & Run with Docker](#5-build--run-with-docker)
-6. [Port & Firewall](#6-port--firewall)
-7. [Nginx Reverse Proxy](#7-nginx-reverse-proxy)
-8. [HTTPS with Certbot (Optional but Recommended)](#8-https-with-certbot-optional-but-recommended)
-9. [Auto-start on Reboot](#9-auto-start-on-reboot)
-10. [Useful Docker Commands](#10-useful-docker-commands)
-11. [Debugging Common Errors](#11-debugging-common-errors)
+| Spec | Minimum (Prod) | Free Tier (Testing only) |
+|---|---|---|
+| **Instance Type** | `t3.small` | `t2.micro` + swap |
+| **RAM** | 2 GB | 1 GB + 2 GB swap |
+| **vCPU** | 2 | 1 |
+| **Storage** | 20 GB gp3 | 20 GB gp2 |
+| **Est. Cost** | ~$15–17/month | Free (12 months) |
+
+> ⚠️ `t2.micro` will OOM during Docker builds. Use a swap file (see Step 2) if you must use it.
 
 ---
 
-## 1. Server Setup
+## Table of Contents
 
-SSH into your Ubuntu server:
+1. [Launch AWS EC2 Instance](#1-launch-aws-ec2-instance)
+2. [Connect to Your Server](#2-connect-to-your-server)
+3. [Install Docker](#3-install-docker)
+4. [Upload / Clone the Project](#4-upload--clone-the-project)
+5. [Configure Environment Variables](#5-configure-environment-variables)
+6. [Build & Run with Docker](#6-build--run-with-docker)
+7. [Port & Firewall](#7-port--firewall)
+8. [Nginx Reverse Proxy](#8-nginx-reverse-proxy)
+9. [HTTPS with Certbot (Optional but Recommended)](#9-https-with-certbot-optional-but-recommended)
+10. [Auto-start on Reboot](#10-auto-start-on-reboot)
+11. [Useful Docker Commands](#11-useful-docker-commands)
+12. [Debugging Common Errors](#12-debugging-common-errors)
 
-```bash
-ssh your-username@your-server-ip
+---
+
+## 1. Launch AWS EC2 Instance
+
+### Step 1 — Sign in to AWS Console
+
+Go to [https://console.aws.amazon.com](https://console.aws.amazon.com) and sign in.
+
+Select your preferred **region** (top-right corner) — choose one close to your users, e.g.:
+- `ap-south-1` — **Mumbai** (best for Indian users ✅)
+- `us-east-1` — Virginia (global default)
+
+---
+
+### Step 2 — Open EC2 Dashboard
+
+1. In the search bar, type **EC2** and click it
+2. Click **"Launch instance"** (orange button)
+
+---
+
+### Step 3 — Configure the Instance
+
+Fill in the following settings:
+
+#### Name
+```
+aws-mnnit-web
 ```
 
-Update all system packages first (always do this on a fresh server):
+#### Application and OS Image (AMI)
+- Select **Ubuntu**
+- Choose: **Ubuntu Server 22.04 LTS (HVM), SSD Volume Type**
+- Architecture: **64-bit (x86)**
+
+#### Instance Type
+| Recommendation | Type | RAM | vCPU |
+|---|---|---|---|
+| ✅ Prod (recommended) | `t3.small` | 2 GB | 2 |
+| 🆓 Free tier (testing) | `t2.micro` | 1 GB | 1 |
+
+#### Key Pair (for SSH access)
+1. Click **"Create new key pair"**
+2. Name it: `aws-mnnit-key`
+3. Key pair type: **RSA**
+4. Private key file format: **`.pem`** (for Linux/Mac/WSL) or **`.ppk`** (for PuTTY on Windows)
+5. Click **"Create key pair"** — it auto-downloads to your machine
+6. **Move it to a safe location** and set permissions:
+   ```bash
+   # On Windows WSL / Linux / Mac
+   mv ~/Downloads/aws-mnnit-key.pem ~/.ssh/
+   chmod 400 ~/.ssh/aws-mnnit-key.pem
+   ```
+
+#### Network Settings — Security Group
+
+Click **"Edit"** next to Network settings. Create a new security group with these **inbound rules**:
+
+| Type | Protocol | Port | Source | Purpose |
+|---|---|---|---|---|
+| SSH | TCP | **22** | My IP (or 0.0.0.0/0) | Remote access |
+| HTTP | TCP | **80** | 0.0.0.0/0 | Web traffic |
+| HTTPS | TCP | **443** | 0.0.0.0/0 | Secure web traffic |
+| Custom TCP | TCP | **3000** | My IP only | Direct app testing |
+
+> ⚠️ **Never** open port 22 to `0.0.0.0/0` in production — restrict SSH to your IP.
+
+#### Configure Storage
+- Size: **20 GiB** (minimum)
+- Volume type: **gp3** (faster and cheaper than gp2)
+
+---
+
+### Step 4 — Launch
+
+Click **"Launch instance"**. Wait ~1 minute for the state to show **✅ Running**.
+
+---
+
+### Step 5 — Assign an Elastic IP (Recommended)
+
+A regular EC2 instance gets a new public IP every reboot. An **Elastic IP** is a fixed static IP.
+
+1. In EC2 sidebar → **Elastic IPs** → **Allocate Elastic IP address** → **Allocate**
+2. Select the new IP → **Actions** → **Associate Elastic IP address**
+3. Select your instance (`aws-mnnit-web`) → **Associate**
+
+> 💡 Elastic IPs are **free** while associated with a running instance. You're billed only if the instance is stopped.
+
+---
+
+## 2. Connect to Your Server
+
+Update system packages first (always do this on a fresh server):
+
+### Option A — AWS Console (easiest, no key needed)
+
+1. Select your instance in EC2 dashboard
+2. Click **"Connect"** → **"EC2 Instance Connect"** tab → **"Connect"**
+3. A browser-based terminal opens — no SSH key required!
+
+### Option B — SSH from Terminal (recommended for regular use)
+
+```bash
+ssh -i ~/.ssh/aws-mnnit-key.pem ubuntu@your-elastic-ip
+```
+
+> The default username for Ubuntu AMIs is always `ubuntu` (not `root` or `ec2-user`).
+
+### Option C — SSH from Windows (PowerShell)
+
+```powershell
+ssh -i C:\Users\Lenovo\.ssh\aws-mnnit-key.pem ubuntu@your-elastic-ip
+```
+
+Once connected, run the initial setup:
 
 ```bash
 sudo apt update && sudo apt upgrade -y
+sudo apt install -y curl git wget unzip ufw
 ```
 
-Install some essential tools:
+#### (Free tier only) Add a 2 GB swap file to prevent OOM crashes
 
 ```bash
-sudo apt install -y curl git wget unzip ufw
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+Verify swap:
+```bash
+free -h
 ```
 
 ---
 
-## 2. Install Docker
+## 3. Install Docker
 
 Your project uses Docker, so you **do not need Node.js or pnpm on the server** — Docker handles everything inside a container.
 
@@ -52,11 +182,14 @@ Your project uses Docker, so you **do not need Node.js or pnpm on the server** �
 
 ```bash
 # Add Docker's official GPG key
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
 # Set up the stable repository
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \
-  https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | \
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 # Install Docker
@@ -80,7 +213,7 @@ sudo systemctl status docker
 
 ---
 
-## 3. Upload / Clone the Project
+## 4. Upload / Clone the Project
 
 ### Option A — Clone from GitHub (Recommended)
 
@@ -112,7 +245,7 @@ cd ~/aws-mnnit-web
 
 ---
 
-## 4. Configure Environment Variables
+## 5. Configure Environment Variables
 
 Your `.env` file is **excluded from Docker builds and Git** (see `.dockerignore`). You must create it manually on the server.
 
@@ -148,7 +281,7 @@ Save with `Ctrl+O`, exit with `Ctrl+X`.
 
 ---
 
-## 5. Build & Run with Docker
+## 6. Build & Run with Docker
 
 ### Build the Docker image
 
@@ -199,7 +332,7 @@ If you see HTML, your app is running. 🎉
 
 ---
 
-## 6. Port & Firewall
+## 7. Port & Firewall
 
 ### Allow traffic on port 3000 (temporary, before Nginx)
 
@@ -221,7 +354,7 @@ Open: `http://your-server-ip:3000`
 
 ---
 
-## 7. Nginx Reverse Proxy
+## 8. Nginx Reverse Proxy
 
 Nginx sits in front of your app and forwards requests from port 80/443 to Docker on port 3000. This is the standard production setup.
 
@@ -276,6 +409,13 @@ server {
     # Increase upload limit (for image uploads)
     client_max_body_size 20M;
 
+    # Performance: Serve static assets directly from Nginx
+    location /_next/static {
+        alias /home/ubuntu/aws-mnnit-web/.next/static;
+        expires 365d;
+        access_log off;
+    }
+
     location / {
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
@@ -316,16 +456,20 @@ Now visit `http://your-domain.com` or `http://your-server-ip` — it should show
 
 ---
 
-## 8. HTTPS with Certbot (Optional but Recommended)
+## 9. HTTPS with Certbot (Optional but Recommended)
 
 HTTPS is **strongly recommended** — browsers show warnings on HTTP sites.
 
 > ⚠️ You need a **real domain name** pointing to your server's IP for this to work. Won't work with bare IP addresses.
 
-### Install Certbot
+### Install Certbot via Snap (Official Method)
 
 ```bash
-sudo apt install -y certbot python3-certbot-nginx
+sudo apt update
+sudo apt install -y snapd
+sudo snap install core; sudo snap refresh core
+sudo snap install --classic certbot
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
 ```
 
 ### Obtain and install a free SSL certificate
@@ -351,7 +495,7 @@ sudo certbot renew --dry-run
 
 ---
 
-## 9. Auto-start on Reboot
+## 10. Auto-start on Reboot
 
 You already passed `--restart unless-stopped` to `docker run`, so your container **automatically restarts** after:
 - A crash
@@ -370,7 +514,7 @@ sudo systemctl enable docker
 
 ---
 
-## 10. Useful Docker Commands
+## 11. Useful Docker Commands
 
 ### View real-time logs
 
@@ -453,7 +597,7 @@ docker run -d \
 
 ---
 
-## 11. Debugging Common Errors
+## 12. Debugging Common Errors
 
 ### ❌ Container exits immediately after starting
 
@@ -470,7 +614,7 @@ Look for error lines at the bottom. Most common causes:
 
 ### ❌ `docker: command not found`
 
-Docker is not installed. Go back to [Step 2](#2-install-docker).
+Docker is not installed. Go back to [Step 3](#3-install-docker).
 
 ---
 
