@@ -31,9 +31,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/manager/participants', request.url))
   }
 
-  // Protect ALL API mutations automatically
+  // Protect ALL API mutations automatically (except public endpoints)
   if (isApiRoute && request.method !== 'GET') {
-    if (!isAdminAuthenticated && !isManagerAuthenticated) {
+    const isPublicMutation = pathname === '/api/participants/find'
+    if (!isPublicMutation && !isAdminAuthenticated && !isManagerAuthenticated) {
       return new NextResponse(JSON.stringify({ error: 'Unauthorized Access' }), { status: 401 })
     }
   }

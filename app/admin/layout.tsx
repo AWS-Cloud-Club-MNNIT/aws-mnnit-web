@@ -35,7 +35,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-[#0F1115] text-white flex overflow-hidden font-sans selection:bg-[#FF9900]/30 relative">
+    <div className="h-screen w-full bg-[#0F1115] text-white flex overflow-hidden font-sans selection:bg-[#FF9900]/30 relative">
       
       {/* Sidebar */}
       <aside className="w-[280px] border-r border-white/5 bg-[#1A222D] flex flex-col h-full relative z-20 shrink-0">
@@ -91,7 +91,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto relative h-screen bg-[#0F1115]">
+      <main className="flex-1 overflow-y-auto relative h-full bg-[#0F1115]">
         
         {/* Top Header */}
         <header className="h-16 border-b border-white/5 bg-[#1A222D] sticky top-0 z-10 flex items-center px-10 justify-between">
