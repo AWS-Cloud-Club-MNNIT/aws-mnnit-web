@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import dbConnect from "@/lib/db";
 import Participant from "@/models/participant";
 
@@ -13,7 +14,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: "Participant not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ participant }, { status: 200 });
+    const cookieStore = await cookies();
+    const isAdmin = cookieStore.has("admin_token");
+    const isManager = cookieStore.has("manager_token");
+
+    return NextResponse.json({ participant, isAdmin, isManager }, { status: 200 });
   } catch (error) {
     console.error("Fetch User Error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

@@ -2,13 +2,17 @@
 
 import { useEffect, useState, use } from "react";
 import QRCode from "qrcode";
-import { CheckCircle, MapPin, EnvelopeSimple, CalendarBlank, Clock, IdentificationCard, XCircle } from "@phosphor-icons/react";
+import Image from "next/image";
+import Link from "next/link";
+import { CheckCircle, MapPin, EnvelopeSimple, CalendarBlank, Clock, IdentificationCard, XCircle, ArrowRight } from "@phosphor-icons/react";
 
 export default function TicketPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const { id } = resolvedParams;
 
   const [participant, setParticipant] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isManager, setIsManager] = useState(false);
   const [loading, setLoading] = useState(true);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
 
@@ -22,6 +26,8 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
       const data = await res.json();
       if (res.ok) {
         setParticipant(data.participant);
+        setIsAdmin(!!data.isAdmin);
+        setIsManager(!!data.isManager);
         generateQRCode(data.participant.participantId);
       }
     } catch (err) {
@@ -195,6 +201,13 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
                  MEALS
                </span>
             </div>
+            
+            {(isAdmin || isManager) && (
+               <Link href={isAdmin ? `/admin/user/${participant.participantId}` : `/manager/user/${participant.participantId}`} className="mt-4 flex items-center justify-center gap-2 p-3 rounded-xl bg-[#FF9900]/20 text-[#FF9900] border border-[#FF9900]/30 hover:bg-[#FF9900]/30 transition shadow-lg">
+                 <span className="font-bold text-sm tracking-wide">Manage Profile</span>
+                 <ArrowRight weight="bold" />
+               </Link>
+            )}
           </div>
 
         </div>
