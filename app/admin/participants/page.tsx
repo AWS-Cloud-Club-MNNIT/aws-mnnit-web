@@ -61,7 +61,7 @@ export default function ParticipantsPage() {
 
   const fetchParticipants = async () => {
     try {
-      const res = await fetch("/api/participants/upload") // using GET side of this or an all endpoint?
+      const res = await fetch("/api/participants")
       if (!res.ok) throw new Error()
       const data = await res.json()
       setAllParticipants(data.participants || [])

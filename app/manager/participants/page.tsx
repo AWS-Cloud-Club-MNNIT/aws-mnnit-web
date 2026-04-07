@@ -52,7 +52,7 @@ export default function ManagerParticipantsPage() {
 
   const fetchParticipants = async () => {
     try {
-      const res = await fetch("/api/participants/upload") // standard GET 
+      const res = await fetch("/api/participants")
       if (!res.ok) throw new Error()
       const data = await res.json()
       setAllParticipants(data.participants || [])
