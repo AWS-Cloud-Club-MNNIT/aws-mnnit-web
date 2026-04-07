@@ -4,44 +4,183 @@ import connectDB from "@/lib/db"
 import Blog from "@/models/blog"
 import { Navbar } from "@/components/shared/Navbar"
 import { Footer } from "@/components/shared/Footer"
-import Markdown from "react-markdown"
+import Link from "next/link"
+import { CaretLeft, CalendarBlank, Tag } from "@phosphor-icons/react/dist/ssr"
 
 export const dynamic = "force-dynamic"
+
+// ─── YouTube embed helper ─────────────────────────────────────────────────────
+function getYouTubeId(url: string): string | null {
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/)
+  return match ? match[1] : null
+}
+
+// ─── Block Renderers ──────────────────────────────────────────────────────────
+function TextBlock({ data }: { data: any }) {
+  return (
+    <div
+      className="prose prose-invert prose-lg max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-white prose-p:text-white/75 prose-p:leading-relaxed prose-a:text-secondary hover:prose-a:text-secondary/80 prose-strong:text-white prose-code:text-secondary prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10 prose-blockquote:border-l-primary prose-blockquote:text-white/60"
+      dangerouslySetInnerHTML={{ __html: data.html || "" }}
+    />
+  )
+}
+
+function ImageBlock({ data }: { data: any }) {
+  const images: any[] = data.images || []
+  if (!images.length) return null
+  const alignment = data.alignment || "center"
+  const alignClass = alignment === "left" ? "justify-start" : alignment === "right" ? "justify-end" : "justify-center"
+  const cols = Math.min(images.length, 3)
+  return (
+    <figure className={`flex flex-wrap gap-4 ${alignClass} my-2`}>
+      {images.map((img: any, i: number) => (
+        <div key={i} className={`overflow-hidden rounded-2xl border border-white/[0.05] ${cols === 1 ? "w-full" : cols === 2 ? "flex-1 min-w-[45%]" : "flex-1 min-w-[30%]"}`}>
+          <img src={img.url} alt={img.alt || img.caption || ""} className="w-full h-auto object-cover" loading="lazy" />
+          {img.caption && <figcaption className="text-center text-xs text-white/40 py-2 px-3">{img.caption}</figcaption>}
+        </div>
+      ))}
+    </figure>
+  )
+}
+
+function MixedBlock({ data }: { data: any }) {
+  const isRight = data.imagePosition === "right"
+  return (
+    <div className={`flex flex-col md:flex-row gap-8 items-start my-2 ${isRight ? "md:flex-row-reverse" : ""}`}>
+      {data.imageUrl && (
+        <figure className="md:w-2/5 flex-shrink-0">
+          <img src={data.imageUrl} alt={data.imageAlt || ""} className="w-full rounded-2xl border border-white/[0.05] object-cover" loading="lazy" />
+          {data.imageCaption && <figcaption className="text-center text-xs text-white/40 mt-2">{data.imageCaption}</figcaption>}
+        </figure>
+      )}
+      <div className="flex-1 prose prose-invert prose-base max-w-none prose-p:text-white/75 prose-headings:text-white" dangerouslySetInnerHTML={{ __html: data.html || "" }} />
+    </div>
+  )
+}
+
+function CodeBlock({ data }: { data: any }) {
+  return (
+    <div className="rounded-2xl overflow-hidden border border-white/[0.08] bg-[#0d1117] my-2">
+      {(data.filename || data.language) && (
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.06] bg-white/[0.03]">
+          <span className="text-xs font-mono text-white/40">{data.filename || ""}</span>
+          {data.language && <span className="text-[10px] font-bold uppercase tracking-widest text-white/20 px-2 py-0.5 bg-white/5 rounded">{data.language}</span>}
+        </div>
+      )}
+      <pre className="p-5 overflow-x-auto"><code className="font-mono text-sm text-green-300/90 leading-relaxed whitespace-pre">{data.code}</code></pre>
+    </div>
+  )
+}
+
+function EmbedBlock({ data }: { data: any }) {
+  if (data.type === "youtube" || (data.url && (data.url.includes("youtube") || data.url.includes("youtu.be")))) {
+    const videoId = getYouTubeId(data.url)
+    if (!videoId) return null
+    return (
+      <figure className="my-2">
+        <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-white/[0.08] shadow-2xl shadow-black/50">
+          <iframe
+            src={`https://www.youtube.com/embed/${videoId}`}
+            title={data.title || "YouTube video"}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="absolute inset-0 w-full h-full"
+          />
+        </div>
+        {data.title && <figcaption className="text-center text-xs text-white/40 mt-2">{data.title}</figcaption>}
+      </figure>
+    )
+  }
+  return (
+    <a href={data.url} target="_blank" rel="noopener noreferrer"
+      className="flex items-center gap-4 p-4 rounded-2xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/20 transition-all group my-2">
+      <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+        <Tag className="w-5 h-5 text-primary" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-white font-medium text-sm group-hover:text-secondary transition-colors truncate">{data.title || data.url}</p>
+        <p className="text-white/30 text-xs truncate mt-0.5">{data.url}</p>
+      </div>
+    </a>
+  )
+}
+
+function renderBlock(block: any) {
+  switch (block.type) {
+    case "text": return <TextBlock key={block.id} data={block.data} />
+    case "image": return <ImageBlock key={block.id} data={block.data} />
+    case "mixed": return <MixedBlock key={block.id} data={block.data} />
+    case "code": return <CodeBlock key={block.id} data={block.data} />
+    case "embed": return <EmbedBlock key={block.id} data={block.data} />
+    default: return null
+  }
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  await connectDB()
+  const blog = await Blog.findOne({ slug })
+  if (!blog) return { title: "Post Not Found" }
+  return {
+    title: `${blog.title} | AWS Cloud Club MNNIT`,
+    description: (blog.blocks.find((b: any) => b.type === "text")?.data?.html || "").replace(/<[^>]+>/g, "").slice(0, 160),
+  }
+}
 
 export default async function BlogDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   await connectDB()
   const { slug } = await params
-  const blog = await Blog.findOne({ slug })
+  const blog = await Blog.findOne({ slug, status: "published" })
 
   if (!blog) return notFound()
+
+  const sortedBlocks = [...blog.blocks].sort((a, b) => a.order - b.order)
 
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-background pt-32 pb-24">
-        <article className="container mx-auto px-6 max-w-4xl">
-          <div className="mb-12 text-center">
-            <div className="flex items-center justify-center gap-2 mb-6 flex-wrap">
-              {blog.tags.map((t: string) => (
-                <span key={t} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-bold uppercase tracking-widest text-white/80">
-                  {t}
-                </span>
-              ))}
-            </div>
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-white leading-tight tracking-tight mb-6">
-              {blog.title}
-            </h1>
-            <p className="text-white/40 font-medium tracking-widest text-sm uppercase">
-              Published on {new Date(blog.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-            </p>
+      <main className="min-h-screen bg-background">
+        {/* Hero / Cover */}
+        <div className="relative w-full h-[50vh] md:h-[65vh] overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/40 to-background z-10" />
+          <img src={blog.coverImage} alt={blog.title} className="w-full h-full object-cover" />
+        </div>
+
+        {/* Article */}
+        <article className="container mx-auto px-6 max-w-3xl -mt-24 relative z-20 pb-24">
+          {/* Tags */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            {(blog.tags || []).map((t: string) => (
+              <span key={t} className="px-3 py-1 bg-primary/20 text-primary border border-primary/20 rounded-full text-xs font-bold uppercase tracking-widest backdrop-blur-md">
+                {t}
+              </span>
+            ))}
           </div>
 
-          <div className="w-full h-[300px] md:h-[500px] rounded-3xl overflow-hidden mb-16 border border-white/[0.05] shadow-2xl">
-            <img src={blog.thumbnail} alt={blog.title} className="w-full h-full object-cover" />
+          {/* Title */}
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-white leading-tight tracking-tight mb-6">
+            {blog.title}
+          </h1>
+
+          {/* Meta */}
+          <div className="flex items-center gap-6 text-xs font-medium text-white/40 mb-12 pb-8 border-b border-white/[0.06]">
+            <span className="flex items-center gap-1.5">
+              <CalendarBlank className="w-4 h-4" />
+              {new Date(blog.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}
+            </span>
+            <span>{sortedBlocks.length} block{sortedBlocks.length !== 1 ? "s" : ""}</span>
           </div>
 
-          <div className="prose prose-invert prose-lg md:prose-xl max-w-none text-white/80 leading-relaxed font-sans prose-headings:font-bold prose-headings:tracking-tight prose-a:text-secondary hover:prose-a:text-secondary/80">
-            <Markdown>{blog.content}</Markdown>
+          {/* Blocks */}
+          <div className="space-y-8">
+            {sortedBlocks.map(block => renderBlock(block))}
+          </div>
+
+          {/* Back link */}
+          <div className="pt-16 border-t border-white/[0.06] mt-16">
+            <Link href="/blogs" className="inline-flex items-center gap-2 text-white/50 hover:text-white transition-colors group font-medium text-sm">
+              <CaretLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to all posts
+            </Link>
           </div>
         </article>
       </main>

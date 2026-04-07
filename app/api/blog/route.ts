@@ -2,10 +2,13 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Blog from "@/models/blog";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     await connectDB();
-    const blogs = await Blog.find().sort({ createdAt: -1 });
+    const { searchParams } = new URL(req.url);
+    const status = searchParams.get("status"); // 'published' | 'draft' | null (all)
+    const query = status ? { status } : {};
+    const blogs = await Blog.find(query).sort({ createdAt: -1 });
     return NextResponse.json(blogs);
   } catch (error) {
     console.error("Failed to fetch blogs:", error);
@@ -17,10 +20,9 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     await connectDB();
-    
-    // Check for required fields
-    if (!body.title || !body.slug || !body.content || !body.thumbnail) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+
+    if (!body.title || !body.slug || !body.coverImage) {
+      return NextResponse.json({ error: "Missing required fields: title, slug, coverImage" }, { status: 400 });
     }
 
     const newBlog = await Blog.create(body);

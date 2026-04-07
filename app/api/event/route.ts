@@ -2,11 +2,16 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Event from "@/models/event";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     await connectDB();
-    // Sort by date upcoming first relative to now, but simple sort works for now
-    const events = await Event.find().sort({ date: 1 });
+    const { searchParams } = new URL(req.url);
+    const status = searchParams.get("status");
+    const featured = searchParams.get("featured");
+    const query: Record<string, any> = {};
+    if (status) query.status = status;
+    if (featured === "true") query.featured = true;
+    const events = await Event.find(query).sort({ date: 1 });
     return NextResponse.json(events);
   } catch (error) {
     console.error("Failed to fetch events:", error);
@@ -18,9 +23,9 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     await connectDB();
-    
-    if (!body.title || !body.slug || !body.description || !body.banner || !body.date) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+
+    if (!body.title || !body.slug || !body.banner || !body.date) {
+      return NextResponse.json({ error: "Missing required fields: title, slug, banner, date" }, { status: 400 });
     }
 
     const newEvent = await Event.create(body);

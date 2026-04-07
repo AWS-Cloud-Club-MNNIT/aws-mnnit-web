@@ -39,6 +39,16 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // Protect privileged GET endpoints (export, logs) to admin/manager only
+  if (isApiRoute && request.method === 'GET') {
+    const isPrivilegedGet =
+      pathname === '/api/participants/export' ||
+      pathname === '/api/participants/logs'
+    if (isPrivilegedGet && !isAdminAuthenticated && !isManagerAuthenticated) {
+      return new NextResponse(JSON.stringify({ error: 'Unauthorized Access' }), { status: 401 })
+    }
+  }
+
   return NextResponse.next()
 }
 

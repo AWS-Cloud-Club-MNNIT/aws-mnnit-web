@@ -16,9 +16,17 @@ export async function POST(req: Request) {
   try {
     await connectDB()
     const body = await req.json()
+
+    if (!body.title || !body.slug || !body.description || !body.image) {
+      return NextResponse.json({ error: 'Missing required fields: title, slug, description, image' }, { status: 400 })
+    }
+
     const track = await Track.create(body)
     return NextResponse.json({ track }, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
+    if (error.code === 11000) {
+      return NextResponse.json({ error: 'Slug already exists' }, { status: 400 })
+    }
     return NextResponse.json({ error: 'Failed to create track' }, { status: 400 })
   }
 }

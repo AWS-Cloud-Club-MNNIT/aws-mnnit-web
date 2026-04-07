@@ -5,13 +5,14 @@ import Blog from "@/models/blog"
 import { Navbar } from "@/components/shared/Navbar"
 import { Footer } from "@/components/shared/Footer"
 import Image from "next/image"
-import { BookOpenText } from "@phosphor-icons/react/dist/ssr"
+import { BookOpenText, CalendarBlank } from "@phosphor-icons/react/dist/ssr"
 
 export const dynamic = "force-dynamic"
 
 export default async function BlogsPage() {
   await connectDB()
-  const blogs = await Blog.find().sort({ createdAt: -1 })
+  // Only show published blogs on the public page
+  const blogs = await Blog.find({ status: "published" }).sort({ createdAt: -1 })
 
   return (
     <>
@@ -30,7 +31,7 @@ export default async function BlogsPage() {
           {blogs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 bg-card/20 border border-white/[0.05] rounded-3xl">
               <BookOpenText weight="duotone" className="w-12 h-12 text-white/20 mb-6" />
-              <h3 className="text-xl font-bold text-white mb-2">Engineering Insights</h3>
+              <h3 className="text-xl font-bold text-white mb-2">Engineering Insights Coming Soon</h3>
               <p className="text-white/50 text-center max-w-sm">
                 Our community is busy writing deep-dive tutorials and architecture breakdowns. Stay tuned for new articles.
               </p>
@@ -38,32 +39,39 @@ export default async function BlogsPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {blogs.map((blog) => (
-                <Link href={`/blogs/${blog.slug}`} key={blog._id.toString()} className="group h-full flex flex-col bg-card/20 border border-white/[0.05] hover:border-white/20 transition-all rounded-3xl overflow-hidden cursor-pointer hover:-translate-y-2 hover:shadow-2xl shadow-primary/10">
+                <Link
+                  href={`/blogs/${blog.slug}`}
+                  key={blog._id.toString()}
+                  className="group h-full flex flex-col bg-card/20 border border-white/[0.05] hover:border-white/20 transition-all rounded-3xl overflow-hidden cursor-pointer hover:-translate-y-2 hover:shadow-2xl shadow-primary/10"
+                >
                   <div className="h-48 w-full relative overflow-hidden">
-                    <Image 
-                      src={blog.thumbnail} 
+                    <Image
+                      src={blog.coverImage}
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                      alt={blog.title} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      alt={blog.title}
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   </div>
                   <div className="p-6 md:p-8 flex flex-col flex-1">
-                    <div className="flex items-center gap-2 mb-4">
+                    <div className="flex items-center gap-2 mb-4 flex-wrap">
                       {blog.tags.slice(0, 2).map((t: string) => (
-                        <span key={t} className="text-[10px] font-bold uppercase tracking-widest px-2 py-1 bg-white/5 rounded text-white border border-white/5">
+                        <span key={t} className="text-[10px] font-bold uppercase tracking-widest px-2 py-1 bg-primary/10 text-primary rounded border border-primary/20">
                           {t}
                         </span>
                       ))}
                     </div>
-                    
+
                     <h2 className="text-xl md:text-2xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-white/70 transition-all line-clamp-2">
                       {blog.title}
                     </h2>
-                    
+
                     <div className="mt-auto pt-6 flex items-center justify-between text-xs font-semibold text-white/40 border-t border-white/[0.05]">
-                      <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
-                      <span className="flex items-center gap-1 group-hover:text-secondary transition-colors"><BookOpenText className="w-4 h-4" /> Read Article</span>
+                      <span className="flex items-center gap-1.5"><CalendarBlank className="w-3.5 h-3.5" />{new Date(blog.createdAt).toLocaleDateString()}</span>
+                      <span className="flex items-center gap-1 group-hover:text-secondary transition-colors">
+                        <BookOpenText className="w-4 h-4" /> Read Article
+                      </span>
                     </div>
                   </div>
                 </Link>
