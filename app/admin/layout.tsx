@@ -10,7 +10,8 @@ import {
   Users,
   SignOut,
   Cloud,
-  Handshake
+  Handshake,
+  IdentificationCard
 } from "@phosphor-icons/react"
 import { motion } from "framer-motion"
 import { logoutAction } from "@/app/admin/login/actions"
@@ -20,6 +21,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const links = [
     { name: "Overview", href: "/admin", icon: <SquaresFour weight="fill" className="w-5 h-5" /> },
+    { name: "Participants", href: "/admin/participants", icon: <IdentificationCard weight="fill" className="w-5 h-5" /> },
     { name: "Tracks", href: "/admin/tracks", icon: <Article weight="fill" className="w-5 h-5" /> },
     { name: "Events", href: "/admin/events", icon: <CalendarCheck weight="fill" className="w-5 h-5" /> },
     { name: "Sponsors", href: "/admin/sponsors", icon: <Handshake weight="fill" className="w-5 h-5" /> },
@@ -95,7 +97,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <header className="h-16 border-b border-white/5 bg-[#1A222D] sticky top-0 z-10 flex items-center px-10 justify-between">
           <div className="flex items-center gap-4">
              <h1 className="text-lg font-bold text-white/90 tracking-tight">
-               {links.find(l => l.href === pathname)?.name || "Dashboard"}
+               {links.find(l => pathname === l.href || (l.href !== "/admin" && pathname.startsWith(l.href)))?.name || "Dashboard"}
              </h1>
           </div>
           <div className="flex items-center gap-4">

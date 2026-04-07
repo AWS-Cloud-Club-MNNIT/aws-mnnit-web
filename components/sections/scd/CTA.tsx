@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function CTA() {
 
@@ -44,7 +45,23 @@ export function CTA() {
               Register on Meetup
             </Button>
           </div>
-          <p className="text-white/70 text-sm mt-6 text-center max-w-lg font-medium">
+          
+          <div className="mt-8 flex flex-col items-center">
+            <p className="text-white/70 text-sm mb-4 text-center max-w-lg font-medium">
+              Already registered and confirmed? Need your entry pass?
+            </p>
+            <Link href="/scd/find-ticket">
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-[#FF9900]/50 text-[#FF9900] hover:bg-[#FF9900]/10 hover:text-[#FF9900] hover:border-[#FF9900] rounded-full h-14 px-8 text-base font-bold shadow-[0_0_20px_rgba(255,153,0,0.1)] transition-all"
+              >
+                Find Your Ticket
+              </Button>
+            </Link>
+          </div>
+          
+          <p className="text-white/50 text-xs mt-6 text-center max-w-lg">
             * Note: It is <strong>mandatory</strong> to register on both Unstop and Meetup to secure your spot.
           </p>
         </div>
