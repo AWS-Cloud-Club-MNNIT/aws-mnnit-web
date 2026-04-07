@@ -3,122 +3,141 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { 
-  SquaresFour, 
-  CalendarCheck, 
-  Article, 
-  Users,
-  SignOut,
-  Cloud,
-  Handshake,
-  IdentificationCard
-} from "@phosphor-icons/react"
 import { motion } from "framer-motion"
+import { SignOut, List } from "@phosphor-icons/react"
 import { logoutAction } from "@/app/admin/login/actions"
+import { useState } from "react"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const links = [
-    { name: "Overview", href: "/admin", icon: <SquaresFour weight="fill" className="w-5 h-5" /> },
-    { name: "Participants", href: "/admin/participants", icon: <IdentificationCard weight="fill" className="w-5 h-5" /> },
-    { name: "Tracks", href: "/admin/tracks", icon: <Article weight="fill" className="w-5 h-5" /> },
-    { name: "Events", href: "/admin/events", icon: <CalendarCheck weight="fill" className="w-5 h-5" /> },
-    { name: "Sponsors", href: "/admin/sponsors", icon: <Handshake weight="fill" className="w-5 h-5" /> },
-    { name: "Blogs", href: "/admin/blogs", icon: <Article weight="fill" className="w-5 h-5" /> },
-    { name: "Team", href: "/admin/team", icon: <Users weight="fill" className="w-5 h-5" /> },
+    { name: "Overview", href: "/admin" },
+    { name: "Participants", href: "/admin/participants" },
+    { name: "Tracks", href: "/admin/tracks" },
+    { name: "Events", href: "/admin/events" },
+    { name: "Sponsors", href: "/admin/sponsors" },
+    { name: "Blogs", href: "/admin/blogs" },
+    { name: "Team", href: "/admin/team" },
   ]
 
-  const handleLogout = () => {
-    document.cookie = 'admin_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
-    window.location.href = '/admin/login'
-  }
-
   return (
-    <div className="min-h-screen w-full bg-[#0F1115] text-white flex font-sans selection:bg-[#FF9900]/30 relative">
-      
-      {/* Fixed Sidebar */}
-      <aside className="fixed top-0 left-0 w-[280px] h-screen border-r border-white/5 bg-[#1A222D] flex flex-col z-50">
-        <div className="p-8 flex items-center gap-4 border-b border-white/5 shadow-sm">
-          <img src="/logo.svg" alt="AWS Logo" className="h-12 w-auto object-contain drop-shadow-md shrink-0" />
-          <div>
-            <h2 className="font-bold text-lg text-white tracking-tight leading-none">AWS Console</h2>
-            <p className="text-[10px] text-[#FF9900] font-bold tracking-widest uppercase mt-1">Admin Mode</p>
-          </div>
-        </div>
-
-        <nav className="flex-1 px-4 py-8 flex flex-col gap-2 overflow-y-auto">
-          {links.map((link) => {
-            const isActive = pathname === link.href
-            return (
-              <Link
-                key={link.name}
-                href={link.href}
-                className={`relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${
-                  isActive 
-                    ? "text-[#FF9900] font-semibold" 
-                    : "text-white/60 hover:text-white hover:bg-white/[0.03]"
-                }`}
-              >
-                {isActive && (
-                  <motion.div 
-                    layoutId="activeTab" 
-                    className="absolute inset-0 bg-[#FF9900]/10 border border-[#FF9900]/30 rounded-xl" 
-                    initial={false}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  />
-                )}
-                <span className={`relative z-10 transition-colors ${isActive ? "text-[#FF9900]" : "text-white/40 group-hover:text-white"}`}>
-                  {link.icon}
-                </span>
-                <span className="relative z-10 tracking-wide">{link.name}</span>
-              </Link>
-            )
-          })}
-        </nav>
-
-        <div className="p-6 border-t border-white/5">
-          <form action={logoutAction}>
-            <button 
-              type="submit"
-              className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-white/50 hover:text-red-400 hover:bg-red-500/10 transition-all font-medium group cursor-pointer"
-            >
-              <SignOut weight="fill" className="w-5 h-5 group-hover:text-red-400 transition-colors" />
-              Sign Out
-            </button>
-          </form>
-        </div>
-      </aside>
-
-      {/* Main Content Column (offset by sidebar width) */}
-      <div className="flex-1 ml-[280px] min-h-screen flex flex-col bg-[#0F1115]">
-        {/* Sticky Top Header */}
-        <header className="h-16 shrink-0 border-b border-white/5 bg-[#1A222D]/90 backdrop-blur-md sticky top-0 z-40 flex items-center px-10 justify-between w-full shadow-sm">
-          <div className="flex items-center gap-4">
-             <h1 className="text-lg font-bold text-white/90 tracking-tight">
-               {links.find(l => pathname === l.href || (l.href !== "/admin" && pathname.startsWith(l.href)))?.name || "Dashboard"}
-             </h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-white/50 hidden md:block">Connected to AWS Atlas</span>
-            <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.6)]" />
-          </div>
-        </header>
-
-        {/* Natural Scrolling Content */}
-        <main className="p-8 md:p-12 w-full flex-1">
-          <div className="max-w-7xl mx-auto">
-            <motion.div
-              key={pathname}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {children}
-            </motion.div>
-          </div>
-        </main>
+    <div className="min-h-screen bg-[#05070a] text-white font-sans selection:bg-[#FF9900]/30 relative flex flex-col">
+      {/* Ambient Glowing Background */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#FF9900]/15 rounded-full blur-[140px] mix-blend-screen" />
+        <div className="absolute bottom-[10%] right-[5%] w-[400px] h-[400px] bg-[#FF9900]/10 rounded-full blur-[120px] mix-blend-screen" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
       </div>
+
+      {/* Floating Horizontal Navigation */}
+      <header className="sticky top-0 z-50 w-full pt-4 px-4 sm:px-6 mb-8">
+        <div className="max-w-7xl mx-auto bg-[#131920]/80 backdrop-blur-xl border border-white/5 rounded-2xl flex items-center justify-between px-6 py-4 shadow-[0_8px_30px_rgb(0,0,0,0.4)] relative overflow-hidden">
+          {/* Top Highlight border map */}
+          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#FF9900]/70 to-transparent opacity-60" />
+
+          {/* Logo & Brand Identity */}
+          <div className="flex items-center gap-4 shrink-0">
+            <div className="bg-white p-1.5 rounded-lg shadow-inner">
+               <img src="/logo.svg" alt="AWS Logo" className="h-6 w-auto object-contain" />
+            </div>
+            <div className="hidden sm:block">
+              <h2 className="font-black text-sm text-white tracking-widest uppercase leading-none">Console</h2>
+              <p className="text-[9px] text-[#FF9900] font-bold tracking-[0.2em] uppercase mt-1">Admin Ops</p>
+            </div>
+          </div>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-1 px-1 py-1 rounded-xl bg-black/20 border border-white/5">
+            {links.map((link) => {
+              const isActive = pathname === link.href || (link.href !== "/admin" && pathname.startsWith(link.href))
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={`relative px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${
+                    isActive ? "text-[#FF9900]" : "text-white/40 hover:text-white"
+                  }`}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTopNavAdmin"
+                      className="absolute inset-0 bg-[#FF9900]/10 border border-[#FF9900]/20 rounded-lg shadow-[inset_0_0_12px_rgba(255,153,0,0.1)]"
+                      initial={false}
+                      transition={{ type: "spring", stiffness: 450, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative z-10">{link.name}</span>
+                </Link>
+              )
+            })}
+          </nav>
+
+          {/* Action Area */}
+          <div className="flex items-center gap-4 shrink-0">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
+              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
+              <span className="text-[10px] font-bold text-green-400 tracking-wider">LIVE</span>
+            </div>
+
+            <form action={logoutAction}>
+              <button 
+                type="submit" 
+                className="flex items-center justify-center group w-9 h-9 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-all shadow-md"
+              >
+                <SignOut weight="bold" className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+              </button>
+            </form>
+
+            <button 
+              className="lg:hidden w-9 h-9 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              <List className="w-5 h-5 text-white" />
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Flyout Menu */}
+        {mobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="lg:hidden absolute top-24 left-4 right-4 bg-[#131920]/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-4 shadow-2xl flex flex-col gap-2 z-50"
+          >
+            {links.map((link) => {
+              const isActive = pathname === link.href || (link.href !== "/admin" && pathname.startsWith(link.href))
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`p-4 rounded-xl text-sm font-bold flex items-center gap-3 ${
+                    isActive ? "bg-[#FF9900]/10 text-[#FF9900] border border-[#FF9900]/20" : "bg-white/5 text-white/60 hover:text-white"
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              )
+            })}
+          </motion.div>
+        )}
+      </header>
+
+      {/* Main Feature View */}
+      <main className="flex-1 w-full relative z-10 px-4 sm:px-6 pb-24">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+             key={pathname}
+             initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+             transition={{ duration: 0.5, ease: "easeOut" }}
+          >
+             {children}
+          </motion.div>
+        </div>
+      </main>
     </div>
   )
 }
