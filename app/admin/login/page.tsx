@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { loginAction } from "./actions"
+import { Input } from "@/components/ui/input"
 
 export default function AdminLogin() {
   const [error, setError] = React.useState("")
@@ -44,7 +45,7 @@ export default function AdminLogin() {
         <CardContent>
           <form onSubmit={handleLogin} className="flex flex-col gap-6">
             <div className="flex flex-col gap-4">
-              <input
+              <Input
                 type="email"
                 name="email"
                 required
@@ -52,7 +53,7 @@ export default function AdminLogin() {
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
                 autoFocus
               />
-              <input
+              <Input
                 type="password"
                 name="password"
                 required

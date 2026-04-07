@@ -1,9 +1,21 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import Link from "next/link"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 import {
   MagnifyingGlass,
   ArrowSquareOut,
@@ -38,11 +50,15 @@ export default function ParticipantsPage() {
   const [uploading, setUploading] = useState(false)
   const [generatingQR, setGeneratingQR] = useState(false)
 
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 50
+
   useEffect(() => {
     fetchParticipants()
   }, [])
 
   useEffect(() => {
+    setCurrentPage(1)
     if (query.trim() === "") {
       setParticipants(allParticipants)
     } else {
@@ -83,15 +99,22 @@ export default function ParticipantsPage() {
       skipEmptyLines: true,
       complete: async (results) => {
         try {
+          // Map platform-specific CSV exported headers to our generic DB schema
+          const mappedData = results.data.map((row: any) => ({
+            name: row["Candidate's Name"] || row["Name"] || row["name"] || "",
+            email: row["Candidate's Email"] || row["Email"] || row["email"] || "",
+            college: row["Candidate's Organisation"] || row["Candidate's College"] || row["Organisation"] || row["College"] || row["college"] || "Unknown Institution"
+          })).filter((row) => row.name && row.email);
+
           const res = await fetch("/api/participants/upload", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ data: results.data }),
+            body: JSON.stringify({ participants: mappedData }),
           })
           const responseData = await res.json()
           if (!res.ok) throw new Error(responseData.error)
           
-          toast.success(`Successfully added ${responseData.insertedCount} delegates!`)
+          toast.success(responseData.message || `Successfully added ${responseData.count} delegates!`)
           fetchParticipants()
         } catch (err: any) {
           toast.error(err.message || "Bulk upload failed")
@@ -147,6 +170,9 @@ export default function ParticipantsPage() {
 
   const presences = allParticipants.filter(p => p.present).length
 
+  const totalPages = Math.ceil(participants.length / itemsPerPage)
+  const currentParticipants = participants.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
   return (
     <div className="space-y-6">
       
@@ -188,7 +214,7 @@ export default function ParticipantsPage() {
 
         {/* Global Toolbar Actions */}
         <div className="flex gap-3 w-full xl:w-auto overflow-x-auto pb-4 xl:pb-0 hide-scrollbar">
-           <label className={`cursor-pointer shrink-0 flex items-center gap-2 px-6 py-4 rounded-2xl bg-white text-black font-bold text-sm tracking-wide transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:-translate-y-1 ${uploading ? "opacity-50 pointer-events-none" : ""}`}>
+           <Label className={`cursor-pointer shrink-0 flex items-center gap-2 px-6 py-4 rounded-2xl bg-white text-black font-bold text-sm tracking-wide transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:-translate-y-1 ${uploading ? "opacity-50 pointer-events-none" : ""}`}>
               {uploading ? (
                 <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
               ) : (
@@ -196,7 +222,7 @@ export default function ParticipantsPage() {
               )}
               {uploading ? "Importing Data..." : "Upload CSV"}
               <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" disabled={uploading} />
-           </label>
+           </Label>
            
            <button 
              onClick={handleGenerateQRs}
@@ -219,7 +245,7 @@ export default function ParticipantsPage() {
       </div>
 
       {/* Database View Core */}
-      <div className="bg-[#131920]/80 backdrop-blur-2xl border border-white/5 rounded-3xl overflow-hidden shadow-2xl relative">
+      <div className="bg-[#131920]/80 backdrop-blur-2xl border border-white/5 rounded-3xl shadow-2xl relative">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FF9900]/0 via-[#FF9900] to-[#FF9900]/0 opacity-30" />
         
         {/* Filtering & Search Header */}
@@ -228,7 +254,7 @@ export default function ParticipantsPage() {
             <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
               <MagnifyingGlass weight="bold" className="w-5 h-5 text-[#FF9900]/50 group-focus-within:text-[#FF9900] transition-colors" />
             </div>
-            <input
+            <Input
               type="text"
               placeholder="Search by ID, name, email or college..."
               value={query}
@@ -252,20 +278,21 @@ export default function ParticipantsPage() {
             <p className="text-white/40 max-w-sm mx-auto">Either no match was found for your search, or you haven't imported the CSV manifest yet.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-white/5 bg-black/40">
-                  <th className="px-6 py-5 text-[10px] font-black text-white/40 tracking-[0.2em] uppercase">Delegate Info</th>
-                  <th className="px-6 py-5 text-[10px] font-black text-white/40 tracking-[0.2em] uppercase hidden sm:table-cell">Contact</th>
-                  <th className="px-6 py-5 text-[10px] font-black text-white/40 tracking-[0.2em] uppercase hidden md:table-cell">Institution</th>
-                  <th className="px-6 py-5 text-[10px] font-black text-white/40 tracking-[0.2em] uppercase">Status</th>
-                  <th className="px-6 py-5 text-right text-[10px] font-black text-white/40 tracking-[0.2em] uppercase">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
+          <div className="flex flex-col">
+            <div className="overflow-x-auto">
+              <Table className="w-full text-left border-collapse relative">
+              <TableHeader className="sticky top-0 z-20 shadow-md">
+                <TableRow className="border-b border-white/5 bg-[#1A222D]">
+                  <TableHead className="px-6 py-5 text-[10px] font-black text-white/40 tracking-[0.2em] uppercase">Delegate Info</TableHead>
+                  <TableHead className="px-6 py-5 text-[10px] font-black text-white/40 tracking-[0.2em] uppercase hidden sm:table-cell">Contact</TableHead>
+                  <TableHead className="px-6 py-5 text-[10px] font-black text-white/40 tracking-[0.2em] uppercase hidden md:table-cell">Institution</TableHead>
+                  <TableHead className="px-6 py-5 text-[10px] font-black text-white/40 tracking-[0.2em] uppercase">Status</TableHead>
+                  <TableHead className="px-6 py-5 text-right text-[10px] font-black text-white/40 tracking-[0.2em] uppercase">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody className="divide-y divide-white/5">
                 <AnimatePresence>
-                  {participants.map((p, index) => (
+                  {currentParticipants.map((p, index) => (
                     <motion.tr 
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -275,7 +302,7 @@ export default function ParticipantsPage() {
                       onClick={() => window.location.href = `/admin/user/${p.participantId}`}
                     >
                       {/* Name & ID */}
-                      <td className="px-6 py-5 align-middle">
+                      <TableCell className="px-6 py-5 align-middle">
                         <div className="flex items-center gap-4">
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shadow-sm shrink-0 transition-colors ${
                             p.present ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-white/5 border-white/10 text-white/30'
@@ -291,24 +318,24 @@ export default function ParticipantsPage() {
                             </div>
                           </div>
                         </div>
-                      </td>
+                      </TableCell>
                       
                       {/* Contact */}
-                      <td className="px-6 py-5 align-middle hidden sm:table-cell">
+                      <TableCell className="px-6 py-5 align-middle hidden sm:table-cell">
                         <span className="text-sm font-medium text-white/60 group-hover:text-white/90 transition-colors">
                           {p.email}
                         </span>
-                      </td>
+                      </TableCell>
 
                       {/* College */}
-                      <td className="px-6 py-5 align-middle hidden md:table-cell">
+                      <TableCell className="px-6 py-5 align-middle hidden md:table-cell">
                         <span className="inline-block max-w-[200px] lg:max-w-xs truncate text-sm font-medium text-white/50">
                           {p.college}
                         </span>
-                      </td>
+                      </TableCell>
 
                       {/* Status Badges */}
-                      <td className="px-6 py-5 align-middle">
+                      <TableCell className="px-6 py-5 align-middle">
                         <div className="flex flex-wrap gap-2">
                           <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase border ${
                             p.present 
@@ -325,10 +352,10 @@ export default function ParticipantsPage() {
                             {p.food ? "Meal Fed" : "No Meal"}
                           </span>
                         </div>
-                      </td>
+                      </TableCell>
 
                       {/* Action */}
-                      <td className="px-6 py-5 align-middle text-right">
+                      <TableCell className="px-6 py-5 align-middle text-right">
                         <Link 
                           href={`/admin/user/${p.participantId}`}
                           onClick={(e) => e.stopPropagation()}
@@ -336,12 +363,55 @@ export default function ParticipantsPage() {
                         >
                           Manage <CaretRight weight="bold" className="w-3 h-3" />
                         </Link>
-                      </td>
+                      </TableCell>
                     </motion.tr>
                   ))}
                 </AnimatePresence>
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
+            </div>
+            {totalPages > 1 && (
+              <div className="p-4 border-t border-white/5 bg-black/20 flex justify-center">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                    
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter(page => page === 1 || page === totalPages || Math.abs(currentPage - page) <= 1)
+                      .map((page, i, arr) => (
+                        <React.Fragment key={page}>
+                          {i > 0 && arr[i - 1] !== page - 1 && (
+                            <PaginationItem>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          )}
+                          <PaginationItem>
+                            <PaginationLink 
+                              onClick={() => setCurrentPage(page)}
+                              isActive={currentPage === page}
+                              className="cursor-pointer"
+                            >
+                              {page}
+                            </PaginationLink>
+                          </PaginationItem>
+                        </React.Fragment>
+                      ))}
+                    
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
           </div>
         )}
       </div>

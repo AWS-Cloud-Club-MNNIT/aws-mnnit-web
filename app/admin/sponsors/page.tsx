@@ -3,16 +3,19 @@
 import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Plus, Trash, Image as ImageIcon, PencilSimple, X } from "@phosphor-icons/react"
+import { Plus, Trash, Image as ImageIcon, PencilSimple, X, InstagramLogo, LinkedinLogo, XLogo } from "@phosphor-icons/react"
 import Cropper from "react-easy-crop"
 import { getCroppedImg } from "@/lib/cropImage"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 
 export default function AdminSponsors() {
   const [sponsors, setSponsors] = React.useState<any[]>([])
   const [isCreating, setIsCreating] = React.useState(false)
   const [editingId, setEditingId] = React.useState<string | null>(null)
   const [formData, setFormData] = React.useState({
-    companyName: "", category: "", priority: 10, sponsorType: "", logo: "", specialNote: "", websiteLink: ""
+    companyName: "", category: "", priority: 10, sponsorType: "", logo: "", specialNote: "", websiteLink: "", instagram: "", linkedin: "", twitter: ""
   })
   const [uploading, setUploading] = React.useState(false)
 
@@ -117,14 +120,17 @@ export default function AdminSponsors() {
       sponsorType: sponsor.sponsorType,
       logo: sponsor.logo,
       specialNote: sponsor.specialNote || "",
-      websiteLink: sponsor.websiteLink
+      websiteLink: sponsor.websiteLink,
+      instagram: sponsor.instagram || "",
+      linkedin: sponsor.linkedin || "",
+      twitter: sponsor.twitter || ""
     })
     setIsCreating(true)
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   const resetForm = () => {
-    setFormData({ companyName: "", category: "", priority: 10, sponsorType: "", logo: "", specialNote: "", websiteLink: "" })
+    setFormData({ companyName: "", category: "", priority: 10, sponsorType: "", logo: "", specialNote: "", websiteLink: "", instagram: "", linkedin: "", twitter: "" })
     setEditingId(null)
     setIsCreating(false)
   }
@@ -147,43 +153,58 @@ export default function AdminSponsors() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-xs text-white/50 uppercase tracking-wider font-bold">Company Name *</label>
-                <input required placeholder="AWS" value={formData.companyName} onChange={e => setFormData({...formData, companyName: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-1 focus:ring-primary" />
+                <Label className="text-xs text-white/50 uppercase tracking-wider font-bold">Company Name *</Label>
+                <Input required placeholder="AWS" value={formData.companyName} onChange={e => setFormData({...formData, companyName: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-1 focus:ring-primary" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-white/50 uppercase tracking-wider font-bold">Category *</label>
-                <input required placeholder="e.g. Cloud Partner" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-1 focus:ring-primary" />
+                <Label className="text-xs text-white/50 uppercase tracking-wider font-bold">Category *</Label>
+                <Input required placeholder="e.g. Cloud Partner" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-1 focus:ring-primary" />
               </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-xs text-white/50 uppercase tracking-wider font-bold">Sponsor Type (Section Heading) *</label>
-                <input required placeholder="e.g. Title Sponser, Gold" value={formData.sponsorType} onChange={e => setFormData({...formData, sponsorType: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-1 focus:ring-primary" />
+                <Label className="text-xs text-white/50 uppercase tracking-wider font-bold">Sponsor Type (Section Heading) *</Label>
+                <Input required placeholder="e.g. Title Sponser, Gold" value={formData.sponsorType} onChange={e => setFormData({...formData, sponsorType: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-1 focus:ring-primary" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-white/50 uppercase tracking-wider font-bold">Priority (Lower = Higher Rank) *</label>
-                <input required type="number" placeholder="10" value={formData.priority} onChange={e => setFormData({...formData, priority: parseInt(e.target.value) || 0})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-1 focus:ring-primary" />
+                <Label className="text-xs text-white/50 uppercase tracking-wider font-bold">Priority (Lower = Higher Rank) *</Label>
+                <Input required type="number" placeholder="10" value={formData.priority} onChange={e => setFormData({...formData, priority: parseInt(e.target.value) || 0})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-1 focus:ring-primary" />
               </div>
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs text-white/50 uppercase tracking-wider font-bold">Website URL *</label>
-              <input required type="url" placeholder="https://..." value={formData.websiteLink} onChange={e => setFormData({...formData, websiteLink: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-1 focus:ring-primary" />
+              <Label className="text-xs text-white/50 uppercase tracking-wider font-bold">Website URL *</Label>
+              <Input required type="url" placeholder="https://..." value={formData.websiteLink} onChange={e => setFormData({...formData, websiteLink: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-1 focus:ring-primary" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-1">
+              <div className="space-y-1">
+                <Label className="text-xs text-white/50 uppercase tracking-wider font-bold">Instagram URL</Label>
+                <Input type="url" placeholder="https://instagram.com/..." value={formData.instagram} onChange={e => setFormData({...formData, instagram: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-1 focus:ring-primary" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-white/50 uppercase tracking-wider font-bold">LinkedIn URL</Label>
+                <Input type="url" placeholder="https://linkedin.com/in/..." value={formData.linkedin} onChange={e => setFormData({...formData, linkedin: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-1 focus:ring-primary" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-white/50 uppercase tracking-wider font-bold">Twitter/X URL</Label>
+                <Input type="url" placeholder="https://x.com/..." value={formData.twitter} onChange={e => setFormData({...formData, twitter: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-1 focus:ring-primary" />
+              </div>
+            </div>
+
+            <div className="space-y-1 mt-1">
+              <Label className="text-xs text-white/50 uppercase tracking-wider font-bold">Special Note (Optional)</Label>
+              <Textarea rows={2} placeholder="Optional message from/about the sponsor" value={formData.specialNote} onChange={e => setFormData({...formData, specialNote: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-1 focus:ring-primary" />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs text-white/50 uppercase tracking-wider font-bold">Special Note (Optional)</label>
-              <textarea rows={2} placeholder="Optional message from/about the sponsor" value={formData.specialNote} onChange={e => setFormData({...formData, specialNote: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-1 focus:ring-primary" />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs text-white/50 uppercase tracking-wider font-bold mb-2 block">Company Logo *</label>
+              <Label className="text-xs text-white/50 uppercase tracking-wider font-bold mb-2 block">Company Logo *</Label>
               <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg p-3 cursor-pointer text-white/80 transition-colors">
+                <Label className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg p-3 cursor-pointer text-white/80 transition-colors">
                   <ImageIcon /> Upload Logo
                   <input type="file" hidden accept="image/*" onChange={handleFileChange} />
-                </label>
+                </Label>
                 {formData.logo && <img src={formData.logo} alt="Preview" className="h-16 w-16 object-contain rounded border border-white/10 bg-white/5 p-1" />}
               </div>
               <p className="text-xs text-white/40 mt-1 italic">Upload a square logo (recommended: 200 × 200 px).</p>
@@ -235,6 +256,25 @@ export default function AdminSponsors() {
                 <p className="text-white/60 text-xs mt-3 bg-white/5 p-2 rounded-md italic truncate">
                   "{sponsor.specialNote}"
                 </p>
+              )}
+              {(sponsor.instagram || sponsor.linkedin || sponsor.twitter) && (
+                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/5">
+                  {sponsor.instagram && (
+                    <a href={sponsor.instagram} target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-[#E1306C] transition-colors">
+                      <InstagramLogo weight="duotone" className="w-5 h-5" />
+                    </a>
+                  )}
+                  {sponsor.linkedin && (
+                    <a href={sponsor.linkedin} target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-[#0A66C2] transition-colors">
+                      <LinkedinLogo weight="duotone" className="w-5 h-5" />
+                    </a>
+                  )}
+                  {sponsor.twitter && (
+                    <a href={sponsor.twitter} target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white transition-colors">
+                      <XLogo weight="duotone" className="w-5 h-5" />
+                    </a>
+                  )}
+                </div>
               )}
             </CardContent>
           </Card>

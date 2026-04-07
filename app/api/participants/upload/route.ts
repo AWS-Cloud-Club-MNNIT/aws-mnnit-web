@@ -12,8 +12,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid data format or empty list" }, { status: 400 });
     }
 
-    // Find the last participant by creation time to get the highest sequential number
-    const lastParticipant = await Participant.findOne().sort({ createdAt: -1 });
+    // Find the absolute highest participantId sequentially
+    const lastParticipant = await Participant.findOne()
+      .sort({ participantId: -1 })
+      .collation({ locale: 'en_US', numericOrdering: true });
+      
     let lastNumber = 0;
 
     if (lastParticipant?.participantId) {
@@ -47,19 +50,36 @@ export async function POST(req: Request) {
 
     if (newParticipants.length === 0) {
       return NextResponse.json(
-        { error: "All participants already exist or no valid rows found." },
-        { status: 400 }
+        { 
+          success: true, 
+          count: 0, 
+          skipped: participants.length, 
+          message: `0 new added. ${participants.length} already exist.` 
+        },
+        { status: 200 }
       );
     }
 
-    await Participant.insertMany(newParticipants, { ordered: false });
+    let actualInsertedCount = newParticipants.length;
+
+    try {
+      await Participant.insertMany(newParticipants, { ordered: false });
+    } catch (insertError: any) {
+      if (insertError.code === 11000 || insertError.name === 'MongoBulkWriteError') {
+        // Ordered: false will throw this if ANY duplicates are found (e.g. race conditions), 
+        // but it still successfully inserts the non-duplicates.
+        actualInsertedCount = insertError.result?.insertedCount || 0;
+      } else {
+        throw insertError; // Throw other unpredictable DB errors
+      }
+    }
 
     return NextResponse.json(
       {
         success: true,
-        count: newParticipants.length,
-        skipped: participants.length - newParticipants.length,
-        message: `${newParticipants.length} participant(s) uploaded successfully.`,
+        count: actualInsertedCount,
+        skipped: participants.length - actualInsertedCount,
+        message: `${actualInsertedCount} new delegates added. ${participants.length - actualInsertedCount} duplicates skipped.`,
       },
       { status: 201 }
     );

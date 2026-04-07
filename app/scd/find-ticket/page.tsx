@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Ticket, MagnifyingGlass, ArrowRight, EnvelopeSimple } from "@phosphor-icons/react";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
+import { Input } from "@/components/ui/input"
 
 export default function FindTicketPage() {
   const [email, setEmail] = useState("");
@@ -74,7 +75,7 @@ export default function FindTicketPage() {
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <EnvelopeSimple className="w-5 h-5 text-white/30" weight="fill" />
                 </div>
-                <input
+                <Input
                   type="email"
                   placeholder="Enter your registered email"
                   value={email}

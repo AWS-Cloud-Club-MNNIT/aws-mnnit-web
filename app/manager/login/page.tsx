@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { managerLoginAction } from "./actions"
+import { Input } from "@/components/ui/input"
 
 export default function ManagerLogin() {
   const [error, setError] = React.useState("")
@@ -50,7 +51,7 @@ export default function ManagerLogin() {
         <CardContent>
           <form onSubmit={handleLogin} className="flex flex-col gap-6">
             <div className="flex flex-col gap-4">
-              <input
+              <Input
                 type="email"
                 name="email"
                 required
@@ -58,7 +59,7 @@ export default function ManagerLogin() {
                 className="w-full bg-[#0F1115] border border-white/10 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-[#FF9900]/50 focus:ring-1 focus:ring-[#FF9900]/50 transition duration-300"
                 autoFocus
               />
-              <input
+              <Input
                 type="password"
                 name="password"
                 required

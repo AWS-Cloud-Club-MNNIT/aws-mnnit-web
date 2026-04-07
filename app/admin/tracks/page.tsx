@@ -3,6 +3,9 @@
 import * as React from "react"
 import { Plus, PencilSimple, Trash, Image as ImageIcon } from "@phosphor-icons/react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 
 export default function AdminTracks() {
   const [tracks, setTracks] = React.useState<any[]>([])
@@ -121,16 +124,16 @@ export default function AdminTracks() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-4">
-                <input required value={title} onChange={e => {
+                <Input required value={title} onChange={e => {
                   setTitle(e.target.value); 
                   if(!editingId) setSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'));
                 }} placeholder="Track Title" className="w-full bg-background border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none" />
-                <input required value={slug} onChange={e => setSlug(e.target.value)} placeholder="URL Slug (e.g. web-dev)" className="w-full bg-background border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none" />
-                <textarea required value={description} onChange={e => setDescription(e.target.value)} placeholder="Short description..." className="w-full h-24 bg-background border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none resize-none" />
-                <label className="flex items-center gap-3 text-white cursor-pointer bg-background border border-white/10 px-4 py-3 rounded-xl">
+                <Input required value={slug} onChange={e => setSlug(e.target.value)} placeholder="URL Slug (e.g. web-dev)" className="w-full bg-background border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none" />
+                <Textarea required value={description} onChange={e => setDescription(e.target.value)} placeholder="Short description..." className="w-full h-24 bg-background border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none resize-none" />
+                <Label className="flex items-center gap-3 text-white cursor-pointer bg-background border border-white/10 px-4 py-3 rounded-xl">
                   <input type="checkbox" checked={isFree} onChange={e => setIsFree(e.target.checked)} className="w-5 h-5 accent-primary" />
                   <span className="font-medium">Free Track (Available to all)</span>
-                </label>
+                </Label>
               </div>
 
               <div className="space-y-4">
@@ -146,7 +149,7 @@ export default function AdminTracks() {
                   <input type="file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 opacity-0 cursor-pointer" required={!editingId && !imagePreview} />
                 </div>
                 
-                <textarea required value={roadmap} onChange={e => setRoadmap(e.target.value)} placeholder="Markdown Roadmap (Use headings, bullets, code)..." className="w-full h-[calc(100%-11rem)] bg-background border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none font-mono text-sm leading-relaxed" />
+                <Textarea required value={roadmap} onChange={e => setRoadmap(e.target.value)} placeholder="Markdown Roadmap (Use headings, bullets, code)..." className="w-full h-[calc(100%-11rem)] bg-background border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none font-mono text-sm leading-relaxed" />
               </div>
             </div>
 

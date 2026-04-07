@@ -4,6 +4,9 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Plus, Trash, Image as ImageIcon } from "@phosphor-icons/react"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 
 export default function AdminEvents() {
   const [events, setEvents] = React.useState<any[]>([])
@@ -86,19 +89,19 @@ export default function AdminEvents() {
         <Card className="bg-card/40 border-white/[0.05] p-6">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-4">
-              <input required placeholder="Title" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
-              <input required placeholder="Slug (e.g. intro-to-aws)" value={formData.slug} onChange={e => setFormData({...formData, slug: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
+              <Input required placeholder="Title" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
+              <Input required placeholder="Slug (e.g. intro-to-aws)" value={formData.slug} onChange={e => setFormData({...formData, slug: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
             </div>
-            <textarea required rows={3} placeholder="Description" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
+            <Textarea required rows={3} placeholder="Description" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
             <div className="grid grid-cols-2 gap-4">
-              <input required type="datetime-local" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
-              <input placeholder="Tags (comma separated)" value={formData.tags} onChange={e => setFormData({...formData, tags: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
+              <Input required type="datetime-local" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
+              <Input placeholder="Tags (comma separated)" value={formData.tags} onChange={e => setFormData({...formData, tags: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
             </div>
             <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg p-3 cursor-pointer text-white/80 transition-colors">
+              <Label className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg p-3 cursor-pointer text-white/80 transition-colors">
                 <ImageIcon /> {uploading ? "Uploading..." : "Upload Banner"}
                 <input type="file" hidden accept="image/*" onChange={handleUpload} disabled={uploading} />
-              </label>
+              </Label>
               {formData.banner && <img src={formData.banner} alt="Preview" className="h-12 w-auto rounded border border-white/10" />}
             </div>
             <Button type="submit" className="bg-secondary text-black hover:bg-secondary/90 font-bold mt-2">Create Event</Button>

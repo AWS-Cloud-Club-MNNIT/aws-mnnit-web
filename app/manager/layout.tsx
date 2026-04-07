@@ -25,7 +25,7 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
 
       {/* Floating Horizontal Navigation */}
       <header className="sticky top-0 z-50 w-full pt-4 px-4 sm:px-6 mb-8">
-        <div className="max-w-5xl mx-auto bg-[#131920]/80 backdrop-blur-xl border border-white/5 rounded-2xl flex items-center justify-between px-6 py-4 shadow-[0_8px_30px_rgb(0,0,0,0.4)] relative overflow-hidden">
+        <div className="max-w-7xl mx-auto bg-[#131920]/80 backdrop-blur-xl border border-white/5 rounded-2xl flex items-center justify-between px-6 py-4 shadow-[0_8px_30px_rgb(0,0,0,0.4)] relative overflow-hidden">
           {/* Top Highlight border map */}
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#FF9900]/70 to-transparent opacity-60" />
 
@@ -71,6 +71,10 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
 
           {/* Action Area */}
           <div className="flex items-center gap-4 shrink-0">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
+              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
+              <span className="text-[10px] font-bold text-green-400 tracking-wider">LIVE</span>
+            </div>
             <form action={managerLogoutAction}>
               <button 
                 type="submit" 
@@ -85,7 +89,7 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
 
       {/* Main Feature View */}
       <main className="flex-1 w-full relative z-10 px-4 sm:px-6 pb-24">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <motion.div
              key={pathname}
              initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}

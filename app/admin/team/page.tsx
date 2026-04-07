@@ -6,6 +6,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Plus, Trash, Image as ImageIcon, PencilSimple, X } from "@phosphor-icons/react"
 import Cropper from "react-easy-crop"
 import { getCroppedImg } from "@/lib/cropImage"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 export default function AdminTeam() {
   const [members, setMembers] = React.useState<any[]>([])
@@ -149,28 +151,28 @@ export default function AdminTeam() {
         <Card className="bg-card/40 border-white/[0.05] p-6">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-4">
-              <input required placeholder="Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
-              <input required placeholder="Role" value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
+              <Input required placeholder="Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
+              <Input required placeholder="Role" value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <input required placeholder="Category (e.g. Core Team)" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
-              <input required type="number" placeholder="Priority (lower = higher prio)" value={formData.priority} onChange={e => setFormData({...formData, priority: parseInt(e.target.value) || 1})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
+              <Input required placeholder="Category (e.g. Core Team)" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
+              <Input required type="number" placeholder="Priority (lower = higher prio)" value={formData.priority} onChange={e => setFormData({...formData, priority: parseInt(e.target.value) || 1})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
             </div>
             <div className="grid grid-cols-1 gap-4">
-              <input placeholder="Special Note (Optional)" value={formData.specialNote} onChange={e => setFormData({...formData, specialNote: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
+              <Input placeholder="Special Note (Optional)" value={formData.specialNote} onChange={e => setFormData({...formData, specialNote: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <input placeholder="GitHub URL" value={formData.github} onChange={e => setFormData({...formData, github: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
-              <input placeholder="LinkedIn URL" value={formData.linkedin} onChange={e => setFormData({...formData, linkedin: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
-              <input placeholder="Twitter URL" value={formData.twitter} onChange={e => setFormData({...formData, twitter: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
-              <input placeholder="Instagram URL" value={formData.instagram} onChange={e => setFormData({...formData, instagram: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
+              <Input placeholder="GitHub URL" value={formData.github} onChange={e => setFormData({...formData, github: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
+              <Input placeholder="LinkedIn URL" value={formData.linkedin} onChange={e => setFormData({...formData, linkedin: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
+              <Input placeholder="Twitter URL" value={formData.twitter} onChange={e => setFormData({...formData, twitter: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
+              <Input placeholder="Instagram URL" value={formData.instagram} onChange={e => setFormData({...formData, instagram: e.target.value})} className="bg-white/5 border border-white/10 rounded-lg p-3 text-white" />
             </div>
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg p-3 cursor-pointer text-white/80 transition-colors">
+                <Label className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg p-3 cursor-pointer text-white/80 transition-colors">
                   <ImageIcon /> {uploading ? "Uploading..." : "Upload Profile Pic"}
                   <input type="file" hidden accept="image/*" onChange={handleFileChange} />
-                </label>
+                </Label>
                 {formData.image && <img src={formData.image} alt="Preview" className="h-12 w-12 object-cover rounded-full border border-white/10" />}
               </div>
               <p className="text-xs text-white/50">Upload a square image (1:1 ratio) for the best fit.</p>

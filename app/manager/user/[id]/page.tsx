@@ -5,6 +5,8 @@ import { toast } from "sonner"
 import Link from "next/link"
 import QRCode from "qrcode"
 import { motion } from "framer-motion"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   CaretLeft,
   CheckCircle,
@@ -216,7 +218,7 @@ export default function ManagerUserUpdatePage({ params }: { params: Promise<{ id
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Present Toggle Button Component */}
-        <label
+        <Label
           className={`flex flex-col p-8 rounded-[2rem] cursor-pointer transition-all duration-300 relative overflow-hidden group border-2 ${
             participant.present
               ? "bg-green-500/10 border-green-500/30 hover:bg-green-500/20"
@@ -256,10 +258,10 @@ export default function ManagerUserUpdatePage({ params }: { params: Promise<{ id
           <p className="text-white/40 text-sm font-medium leading-relaxed">
             {participant.present ? "Participant is inside the event perimeter. Toggle off to revoke access." : "Authorize entry for this delegate by activating this security protocol."}
           </p>
-        </label>
+        </Label>
 
         {/* Food Toggle Button Component */}
-        <label
+        <Label
           className={`flex flex-col p-8 rounded-[2rem] cursor-pointer transition-all duration-300 relative overflow-hidden group border-2 ${
             participant.food
               ? "bg-[#FF9900]/10 border-[#FF9900]/30 hover:bg-[#FF9900]/20"
@@ -299,7 +301,7 @@ export default function ManagerUserUpdatePage({ params }: { params: Promise<{ id
           <p className="text-white/40 text-sm font-medium leading-relaxed">
             {participant.food ? "Meal protocol complete. Delegate has received their food allocation." : "Issue meal rights to this delegate. Toggle to confirm physical distribution."}
           </p>
-        </label>
+        </Label>
       </div>
     </div>
   )

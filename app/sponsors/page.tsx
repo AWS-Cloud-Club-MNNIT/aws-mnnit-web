@@ -4,7 +4,7 @@ import * as React from "react";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
-import { ArrowUpRight, Handshake } from "@phosphor-icons/react";
+import { ArrowUpRight, Handshake, InstagramLogo, LinkedinLogo, XLogo } from "@phosphor-icons/react";
 
 interface Sponsor {
   _id: string;
@@ -15,6 +15,9 @@ interface Sponsor {
   logo: string;
   specialNote?: string;
   websiteLink: string;
+  instagram?: string;
+  linkedin?: string;
+  twitter?: string;
 }
 
 export default function SponsorsPage() {
@@ -141,23 +144,21 @@ export default function SponsorsPage() {
 
                 <div className="flex flex-wrap justify-center gap-6">
                   {group.sponsors.map((sponsor, sponsorIndex) => (
-                    <motion.a
+                    <motion.div
                       key={sponsor._id}
-                      href={sponsor.websiteLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      onClick={() => window.open(sponsor.websiteLink, '_blank')}
                       initial={{ opacity: 0, scale: 0.95 }}
                       whileInView={{ opacity: 1, scale: 1 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.5, delay: sponsorIndex * 0.1 }}
-                      className={`group relative rounded-3xl overflow-hidden border transition-all duration-500 bg-white/2 flex flex-col mx-auto w-full max-w-[300px] aspect-square ${
+                      className={`cursor-pointer group relative rounded-3xl overflow-hidden border transition-all duration-500 bg-white/2 flex flex-col mx-auto w-full max-w-[300px] min-h-[300px] ${
                         isTopPriority 
                           ? 'border-primary/30 hover:border-primary shadow-[0_0_30px_rgba(124,58,237,0.1)] hover:shadow-[0_0_50px_rgba(124,58,237,0.25)]' 
                           : 'border-white/5 hover:border-white/20 hover:bg-white/4'
                       }`}
                     >
-                      {/* 300x300 Inner Logo Container */}
-                      <div className={`relative flex-1 flex items-center justify-center overflow-hidden bg-white/2 backdrop-blur-sm transition-colors duration-500`}>
+                      {/* Inner Logo Container */}
+                      <div className={`relative aspect-square w-full flex items-center justify-center overflow-hidden bg-white/2 backdrop-blur-sm transition-colors duration-500`}>
                         {/* Decorative texture: subtle grid lines */}
                         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
                         
@@ -178,10 +179,37 @@ export default function SponsorsPage() {
 
                       {/* Content Container */}
                       <div className="p-4 relative z-20 shrink-0 bg-background/80 backdrop-blur-xl border-t border-white/5 flex flex-col items-center justify-center text-center">
-                        <h3 className={`font-black text-white tracking-tight line-clamp-1 w-full text-xl`}>
+                        <h3 className={`font-black text-white tracking-tight line-clamp-1 w-full text-2xl mb-1`}>
                           {sponsor.companyName}
                         </h3>
-                        <p className="text-primary font-bold text-xs mt-1">{sponsor.category}</p>
+                        <p className="text-primary font-bold text-sm uppercase tracking-widest mb-1">{sponsor.category}</p>
+
+                        {sponsor.specialNote && (
+                          <p className="text-white/80 text-sm mt-3 bg-white/5 px-3 py-2.5 rounded-lg italic w-full border border-white/10 leading-relaxed shadow-inner">
+                            &quot;{sponsor.specialNote}&quot;
+                          </p>
+                        )}
+                        
+                        {/* Social Links */}
+                        {(sponsor.instagram || sponsor.linkedin || sponsor.twitter) && (
+                          <div className="flex items-center gap-4 mt-4 mb-2">
+                            {sponsor.instagram && (
+                              <a href={sponsor.instagram} target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-[#E1306C] transition-all hover:scale-110" onClick={(e) => e.stopPropagation()}>
+                                <InstagramLogo weight="duotone" className="w-7 h-7" />
+                              </a>
+                            )}
+                            {sponsor.linkedin && (
+                              <a href={sponsor.linkedin} target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-[#0A66C2] transition-all hover:scale-110" onClick={(e) => e.stopPropagation()}>
+                                <LinkedinLogo weight="duotone" className="w-7 h-7" />
+                              </a>
+                            )}
+                            {sponsor.twitter && (
+                              <a href={sponsor.twitter} target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white transition-all hover:scale-110" onClick={(e) => e.stopPropagation()}>
+                                <XLogo weight="duotone" className="w-7 h-7" />
+                              </a>
+                            )}
+                          </div>
+                        )}
                         
                         {/* Hover interaction pop-up element */}
                         <div className="absolute top-0 right-0 -mt-3 mr-4 w-7 h-7 rounded-full bg-background border border-white/10 flex items-center justify-center text-white/40 group-hover:text-primary group-hover:border-primary/50 transition-all duration-300 shadow-[0_0_15px_rgba(124,58,237,0)] group-hover:shadow-[0_0_10px_rgba(124,58,237,0.4)] z-30 opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
@@ -191,7 +219,7 @@ export default function SponsorsPage() {
                       
                       {/* Hover Gradient Effect */}
                       <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-                    </motion.a>
+                    </motion.div>
                   ))}
                 </div>
               </motion.div>
