@@ -19,11 +19,11 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
   ]
 
   return (
-    <div className="h-screen w-full bg-[#0F1115] text-white flex overflow-hidden font-sans selection:bg-[#FF9900]/30 relative">
+    <div className="min-h-screen w-full bg-[#0F1115] text-white flex font-sans selection:bg-[#FF9900]/30 relative">
       
-      {/* Sidebar */}
-      <aside className="w-[280px] border-r border-white/5 bg-[#1A222D] flex flex-col h-full relative z-20 shrink-0">
-        <div className="p-8 flex items-center gap-4 border-b border-white/5">
+      {/* Fixed Sidebar */}
+      <aside className="fixed top-0 left-0 w-[280px] h-screen border-r border-white/5 bg-[#1A222D] flex flex-col z-50">
+        <div className="p-8 flex items-center gap-4 border-b border-white/5 shadow-sm">
           <img src="/logo.svg" alt="AWS Logo" className="h-12 w-auto object-contain drop-shadow-md shrink-0" />
           <div>
              <h2 className="font-bold text-lg text-white tracking-tight leading-none">Event Desk</h2>
@@ -74,9 +74,10 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto relative h-full bg-[#0F1115]">
-        <header className="h-16 border-b border-white/5 bg-[#1A222D] sticky top-0 z-10 flex items-center px-10 justify-between">
+      {/* Main Content Column (offset by sidebar width) */}
+      <div className="flex-1 ml-[280px] min-h-screen flex flex-col bg-[#0F1115]">
+        {/* Sticky Top Header */}
+        <header className="h-16 shrink-0 border-b border-white/5 bg-[#1A222D]/90 backdrop-blur-md sticky top-0 z-40 flex items-center px-10 justify-between w-full shadow-sm">
           <div className="flex items-center gap-4">
              <h1 className="text-lg font-bold text-white/90 tracking-tight">
                Registration Desk
@@ -88,17 +89,20 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
           </div>
         </header>
 
-        <div className="p-8 md:p-12 max-w-7xl mx-auto relative z-0">
-          <motion.div
-            key={pathname}
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-          >
-            {children}
-          </motion.div>
-        </div>
-      </main>
+        {/* Natural Scrolling Content */}
+        <main className="p-8 md:p-12 w-full flex-1">
+          <div className="max-w-7xl mx-auto">
+            <motion.div
+              key={pathname}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {children}
+            </motion.div>
+          </div>
+        </main>
+      </div>
     </div>
   )
 }
