@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import dbConnect from "@/lib/db";
 import Participant from "@/models/participant";
 import ActivityLog from "@/models/activityLog";
+import { emitter } from "@/lib/eventEmitter";
 
 // POST /api/participants/verify — Bulk verify/reject/pending
 export async function POST(req: Request) {
@@ -78,6 +79,16 @@ export async function POST(req: Request) {
     if (logs.length > 0) {
       await ActivityLog.insertMany(logs);
     }
+
+    participantsToUpdate.forEach(p => {
+      // Need to merge the updated status since we only fetched it before the updateMany
+      emitter.emit("participant_update", {
+        ...p.toObject(),
+        verificationStatus,
+        verifiedBy: performedBy,
+        verifiedAt: new Date()
+      });
+    });
 
     return NextResponse.json(
       {

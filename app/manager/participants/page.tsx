@@ -50,6 +50,34 @@ export default function ManagerParticipantsPage() {
   useEffect(() => { fetchParticipants() }, [])
   useEffect(() => { setCurrentPage(1); setSelectedIds(new Set()) }, [query, activeTab])
 
+  useEffect(() => {
+    const eventSource = new EventSource("/api/participants/stream")
+
+    eventSource.addEventListener("update", (e) => {
+      try {
+        const updatedParticipant = JSON.parse(e.data)
+        setAllParticipants(prev => {
+          const exists = prev.find(p => p.participantId === updatedParticipant.participantId)
+          if (exists) {
+            return prev.map(p => p.participantId === updatedParticipant.participantId ? updatedParticipant : p)
+          }
+          return [updatedParticipant, ...prev]
+        })
+      } catch (err) {}
+    })
+
+    eventSource.addEventListener("delete", (e) => {
+      try {
+        const { participantId } = JSON.parse(e.data)
+        setAllParticipants(prev => prev.filter(p => p.participantId !== participantId))
+      } catch (err) {}
+    })
+
+    return () => {
+      eventSource.close()
+    }
+  }, [])
+
   const fetchParticipants = async () => {
     try {
       const res = await fetch("/api/participants")

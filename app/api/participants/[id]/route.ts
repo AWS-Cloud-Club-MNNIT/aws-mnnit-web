@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import dbConnect from "@/lib/db";
 import Participant from "@/models/participant";
 import ActivityLog from "@/models/activityLog";
+import { emitter } from "@/lib/eventEmitter";
 
 // GET /api/participants/[id] — public (verified only, no mobile) or privileged (full)
 export async function GET(
@@ -132,6 +133,8 @@ export async function PATCH(
       timestamp: new Date(),
     });
 
+    emitter.emit("participant_update", updatedParticipant);
+
     return NextResponse.json(
       { success: true, participant: updatedParticipant },
       { status: 200 }
@@ -181,6 +184,8 @@ export async function DELETE(
 
     // Clean up activity logs for this participant
     await ActivityLog.deleteMany({ participantId: id });
+
+    emitter.emit("participant_delete", { participantId: id });
 
     return NextResponse.json(
       { success: true, message: `${deleted.name} has been removed.` },

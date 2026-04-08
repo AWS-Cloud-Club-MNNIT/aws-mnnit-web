@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import dbConnect from "@/lib/db";
 import Participant from "@/models/participant";
 import ActivityLog from "@/models/activityLog";
+import { emitter } from "@/lib/eventEmitter";
 
 // POST /api/participants/delete — Bulk delete (Admin/Manager only)
 export async function POST(req: Request) {
@@ -45,6 +46,10 @@ export async function POST(req: Request) {
 
     // Clean up their activity logs too
     await ActivityLog.deleteMany({ participantId: { $in: participantIds } });
+
+    participantIds.forEach((id: string) => {
+      emitter.emit("participant_delete", { participantId: id });
+    });
 
     return NextResponse.json(
       {
