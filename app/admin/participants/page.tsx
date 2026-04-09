@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import Link from "next/link"
@@ -8,14 +8,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
   Pagination, PaginationContent, PaginationEllipsis, PaginationItem,
   PaginationLink, PaginationNext, PaginationPrevious,
 } from "@/components/ui/pagination"
 import {
-  MagnifyingGlass, ArrowSquareOut, UploadSimple, DownloadSimple,
+  MagnifyingGlass, UploadSimple, DownloadSimple,
   QrCode, UsersThree, CheckCircle, XCircle, CaretRight, UserFocus,
-  Clock, Phone, Buildings, Funnel, ClockCounterClockwise, Trash, Warning
+  Clock, Phone, Buildings, Funnel, ClockCounterClockwise, Trash
 } from "@phosphor-icons/react"
 import Papa from "papaparse"
 import JSZip from "jszip"
@@ -64,7 +65,7 @@ export default function ParticipantsPage() {
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [bulkDeleting, setBulkDeleting] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [activeTab, setActiveTab] = useState<"pending" | "verified" | "rejected">("pending")
+  const [activeTab, setActiveTab] = useState<"all" | "pending" | "verified" | "rejected">("all")
   const [logs, setLogs] = useState<ActivityLog[]>([])
   const [showLogs, setShowLogs] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
@@ -86,14 +87,18 @@ export default function ParticipantsPage() {
           }
           return [updatedParticipant, ...prev]
         })
-      } catch (err) {}
+      } catch (err) {
+        console.log(err);
+      }
     })
 
     eventSource.addEventListener("delete", (e) => {
       try {
         const { participantId } = JSON.parse(e.data)
         setAllParticipants(prev => prev.filter(p => p.participantId !== participantId))
-      } catch (err) {}
+      } catch (err) {
+        console.log(err);
+      }
     })
 
     return () => {
@@ -129,7 +134,7 @@ export default function ParticipantsPage() {
     setShowLogs(!showLogs)
   }
 
-  const filteredByTab = allParticipants.filter(p =>
+  const filteredByTab = activeTab === "all" ? allParticipants : allParticipants.filter(p =>
     (p.verificationStatus || "pending") === activeTab
   )
 
@@ -600,11 +605,30 @@ export default function ParticipantsPage() {
           {generatingQR ? "Zipping..." : "Export QRs"}
         </button>
 
-        <button onClick={() => handleExportCSV()} disabled={allParticipants.length === 0}
-          className="shrink-0 flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-sm tracking-wide transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:pointer-events-none">
-          <DownloadSimple weight="bold" className="w-4 h-4 text-white/60" />
-          Export CSV
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button disabled={allParticipants.length === 0}
+              className="shrink-0 flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-sm tracking-wide transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:pointer-events-none data-[state=open]:bg-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)] focus:outline-none">
+              <DownloadSimple weight="bold" className="w-4 h-4 text-white/60" />
+              Export CSV
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" sideOffset={8} className="w-48 bg-[#131920]/95 backdrop-blur-xl border border-white/10 rounded-xl p-1.5 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)]">
+            <DropdownMenuItem onClick={() => handleExportCSV()} className="text-sm font-bold text-white/70 hover:text-white hover:bg-white/10 focus:bg-white/10 focus:text-white rounded-lg cursor-pointer px-3 py-2.5 outline-none transition-colors">
+              All Participants
+            </DropdownMenuItem>
+            <div className="h-px bg-white/5 my-1 mx-2" />
+            <DropdownMenuItem onClick={() => handleExportCSV("verified")} className="text-sm font-bold text-green-400/70 hover:text-green-400 hover:bg-green-500/10 focus:bg-green-500/10 focus:text-green-400 rounded-lg cursor-pointer px-3 py-2.5 outline-none transition-colors">
+              Verified Only
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExportCSV("pending")} className="text-sm font-bold text-amber-400/70 hover:text-amber-400 hover:bg-amber-500/10 focus:bg-amber-500/10 focus:text-amber-400 rounded-lg cursor-pointer px-3 py-2.5 outline-none transition-colors">
+              Pending Only
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExportCSV("rejected")} className="text-sm font-bold text-red-400/70 hover:text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-400 rounded-lg cursor-pointer px-3 py-2.5 outline-none transition-colors">
+              Rejected Only
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <button onClick={toggleLogs}
           className={`shrink-0 flex items-center gap-2 px-5 py-3 rounded-xl border font-bold text-sm tracking-wide transition-all hover:-translate-y-0.5 ${showLogs ? "bg-purple-500/15 border-purple-500/30 text-purple-400" : "bg-white/5 border-white/10 text-white/60 hover:text-white"}`}>
@@ -686,7 +710,11 @@ export default function ParticipantsPage() {
 
         <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as any); setCurrentPage(1) }}>
           <div className="px-5 pt-4">
-            <TabsList className="bg-black/30 border border-white/10 p-1 rounded-xl">
+            <TabsList className="bg-black/30 border border-white/10 p-1 rounded-xl flex-wrap">
+              <TabsTrigger value="all" className="data-[state=active]:bg-blue-500/15 data-[state=active]:text-blue-400 data-[state=active]:border-blue-500/30 text-white/50 rounded-lg font-bold text-xs uppercase tracking-widest px-4 py-2 transition-all">
+                All
+                <span className="ml-2 bg-blue-500/20 text-blue-400 text-[10px] font-black px-1.5 py-0.5 rounded-md">{counts.total}</span>
+              </TabsTrigger>
               <TabsTrigger value="pending" className="data-[state=active]:bg-amber-500/15 data-[state=active]:text-amber-400 data-[state=active]:border-amber-500/30 text-white/50 rounded-lg font-bold text-xs uppercase tracking-widest px-4 py-2 transition-all">
                 Pending
                 <span className="ml-2 bg-amber-500/20 text-amber-400 text-[10px] font-black px-1.5 py-0.5 rounded-md">{counts.pending}</span>
@@ -708,6 +736,15 @@ export default function ParticipantsPage() {
             </div>
           ) : (
             <>
+              <TabsContent value="all" className="mt-0 pb-2">
+                {paginated.length === 0 ? (
+                  <div className="p-16 text-center">
+                    <UsersThree className="w-14 h-14 text-blue-400/20 mx-auto mb-4" weight="fill" />
+                    <h3 className="text-xl font-bold text-white mb-2">No Delegates</h3>
+                    <p className="text-white/40 max-w-sm mx-auto">Upload delegates to get started.</p>
+                  </div>
+                ) : renderTable(paginated)}
+              </TabsContent>
               <TabsContent value="pending" className="mt-0 pb-2">
                 {paginated.length === 0 ? (
                   <div className="p-16 text-center">
