@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { onLCP, onCLS, onINP, onTTFB, Metric } from "web-vitals";
 
@@ -8,7 +8,7 @@ function generateSessionId() {
   return "sess_" + Math.random().toString(36).substring(2, 12) + "_" + Date.now();
 }
 
-export default function AnalyticsTracker() {
+function AnalyticsTrackerInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const sessionIdRef = useRef<string>("");
@@ -104,4 +104,12 @@ export default function AnalyticsTracker() {
   }, [pathname, searchParams]);
 
   return null;
+}
+
+export default function AnalyticsTracker() {
+  return (
+    <Suspense fallback={null}>
+      <AnalyticsTrackerInner />
+    </Suspense>
+  );
 }
