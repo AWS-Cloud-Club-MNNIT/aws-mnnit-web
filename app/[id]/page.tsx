@@ -4,10 +4,12 @@ import { useEffect, useState, use } from "react";
 import QRCode from "qrcode";
 import Image from "next/image"; // wait, the generated QR is a data URL so we can use next/image or native img
 import { CheckCircle, MapPin, IdentificationBadge } from "@phosphor-icons/react";
+import { useRouter } from "next/navigation";
 
 export default function TicketPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const { id } = resolvedParams;
+  const router = useRouter();
 
   const [participant, setParticipant] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -22,6 +24,14 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
       const res = await fetch(`/api/user/${id}`);
       const data = await res.json();
       if (res.ok) {
+        if (data.isAdmin) {
+          router.push(`/admin/user/${id}`);
+          return;
+        }
+        if (data.isManager) {
+          router.push(`/manager/user/${id}`);
+          return;
+        }
         setParticipant(data.participant);
         generateQRCode(data.participant.participantId);
       }

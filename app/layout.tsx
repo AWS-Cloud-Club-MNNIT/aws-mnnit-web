@@ -3,7 +3,6 @@ import { Geist, Geist_Mono, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
-import { LoadingScreen } from "@/components/loading-screen";
 import { SmoothScroll } from "@/components/shared/SmoothScroll";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 
@@ -47,7 +46,6 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col relative overflow-x-hidden">
         <AnalyticsTracker />
-        <LoadingScreen />
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
