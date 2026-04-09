@@ -5,7 +5,11 @@ import AnalyticsSession from "@/models/analyticsSession";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { sessionId, path, userAgent, screenResolution, action } = body;
+    const { 
+      sessionId, deviceId, path, userAgent, screenResolution, action, 
+      referrer, utmSource, utmMedium, utmCampaign,
+      metric, value, eventName, eventData 
+    } = body;
 
     if (!sessionId || !path || !action) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -19,16 +23,35 @@ export async function POST(req: NextRequest) {
     const session = await AnalyticsSession.findOne({ sessionId });
 
     if (!session) {
-      // If heartbeat comes before page_view, ignore
-      if (action === "heartbeat") {
+      // If heartbeat or vital comes before page_view, ignore
+      if (action !== "page_view") {
         return NextResponse.json({ success: true });
       }
+
+      // Try to determine country/city from request headers (IP geolocation)
+      // Usually provided by Vercel/Cloudflare. If missing, they remain undefined.
+      const country = req.headers.get("x-vercel-ip-country") || undefined;
+      const city = req.headers.get("x-vercel-ip-city") || undefined;
+      const region = req.headers.get("x-vercel-ip-country-region") || undefined;
+      
+      // Extract IP address from request
+      const forwardedFor = req.headers.get("x-forwarded-for");
+      const ipAddress = forwardedFor ? forwardedFor.split(",")[0].trim() : "Unknown";
 
       // Create new session
       await AnalyticsSession.create({
         sessionId,
+        deviceId: deviceId || sessionId, // Fallback for old clients
+        ipAddress,
         userAgent,
         screenResolution,
+        referrer,
+        utmSource,
+        utmMedium,
+        utmCampaign,
+        country,
+        city,
+        region,
         startTime: now,
         lastActivity: now,
         duration: 0,
@@ -58,6 +81,23 @@ export async function POST(req: NextRequest) {
       }
     } else if (action === "heartbeat") {
       if (session.duration > 10) session.isBounce = false;
+    } else if (action === "web_vital" && metric !== undefined && value !== undefined) {
+      if (!session.performanceMetrics) {
+        session.performanceMetrics = {};
+      }
+      const m = metric.toLowerCase();
+      if (["lcp", "cls", "fid", "ttfb", "inp"].includes(m)) {
+        session.performanceMetrics[m] = value;
+      }
+    } else if (action === "custom_event" && eventName) {
+      session.events.push({
+        name: eventName,
+        timestamp: now,
+        data: eventData
+      });
+      if (session.duration > 10 || session.events.length > 0) {
+        session.isBounce = false;
+      }
     }
 
     await session.save();
