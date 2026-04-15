@@ -7,11 +7,19 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     await connectDB()
     const { id } = await params
     const body = await req.json()
-    const track = await Track.findByIdAndUpdate(id, body, { new: true })
+    const track = await Track.findByIdAndUpdate(id, body, { new: true, runValidators: true })
     if (!track) return NextResponse.json({ error: 'Track not found' }, { status: 404 })
     return NextResponse.json({ track })
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to update track' }, { status: 400 })
+  } catch (error: any) {
+    console.error('Track update error:', error)
+    if (error.code === 11000) {
+      return NextResponse.json({ error: 'Slug already exists. Please choose a unique slug.' }, { status: 400 })
+    }
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map((err: any) => err.message)
+      return NextResponse.json({ error: `Validation error: ${messages.join(', ')}` }, { status: 400 })
+    }
+    return NextResponse.json({ error: error.message || 'Failed to update track' }, { status: 400 })
   }
 }
 

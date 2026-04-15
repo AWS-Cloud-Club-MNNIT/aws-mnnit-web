@@ -328,18 +328,51 @@ export default function AdminTracks() {
   }
 
   const handleSave = async () => {
-    if (!title || !slug || !image) { alert("Title, slug, and image are required."); return }
+    if (!title || !slug || !image || !description) {
+      alert("Title, slug, description, and image are required.")
+      return
+    }
+
+    // Basic topic validation
+    const validateTopics = (tList: Topic[]): string | null => {
+      for (const t of tList) {
+        if (!t.title) return `Topic "${t.title || 'Untitled'}" is missing a title`
+        if (t.subtopics.length > 0) {
+          const subErr = validateTopics(t.subtopics)
+          if (subErr) return subErr
+        }
+      }
+      return null
+    }
+
+    const topicError = validateTopics(topics)
+    if (topicError) {
+      alert(topicError)
+      return
+    }
+
     setSaving(true)
     const payload = { title, slug, description, image, isFree, topics: topics.map((t, i) => ({ ...t, order: i })) }
     const id = editingTrack?._id
-    const res = await fetch(id ? `/api/track/${id}` : "/api/track", {
-      method: id ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    })
-    setSaving(false)
-    if (res.ok) { fetchTracks(); closeEditor() }
-    else alert("Failed to save. Check if slug is unique.")
+
+    try {
+      const res = await fetch(id ? `/api/track/${id}` : "/api/track", {
+        method: id ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      const data = await res.json()
+      if (res.ok) {
+        fetchTracks()
+        closeEditor()
+      } else {
+        alert(data.error || "Failed to save track. Please check if the slug is unique.")
+      }
+    } catch (err) {
+      alert("An error occurred while saving. Please try again.")
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleDelete = async (id: string) => {
