@@ -128,10 +128,13 @@ function SpeakersEditor({ data, onChange }: { data: any; onChange: (d: any) => v
       {speakers.map(sp => (
         <div key={sp.id} className="border border-white/[0.06] rounded-xl p-4 space-y-3">
           <div className="flex items-start gap-4">
-            <label className="w-16 h-16 rounded-full border border-dashed border-white/10 flex-shrink-0 overflow-hidden cursor-pointer hover:bg-white/5 transition-colors flex items-center justify-center bg-white/[0.02]">
-              {sp.photo ? <img src={sp.photo} className="w-full h-full object-cover" alt="" /> : (uploading === sp.id ? <span className="text-[8px] text-white/30">…</span> : <Users className="w-5 h-5 text-white/20" />)}
-              <input type="file" hidden accept="image/*" onChange={(e) => e.target.files?.[0] && uploadPhoto(sp.id, e.target.files[0])} />
-            </label>
+            <div className="flex flex-col items-center gap-2">
+              <label className="w-16 h-16 rounded-full border border-dashed border-white/10 flex-shrink-0 overflow-hidden cursor-pointer hover:bg-white/5 transition-colors flex items-center justify-center bg-white/[0.02]" title="Upload Photo">
+                {sp.photo ? <img src={sp.photo} className="w-full h-full object-cover" alt="" /> : (uploading === sp.id ? <span className="text-[8px] text-white/30">…</span> : <Users className="w-5 h-5 text-white/20" />)}
+                <input type="file" hidden accept="image/*" onChange={(e) => e.target.files?.[0] && uploadPhoto(sp.id, e.target.files[0])} />
+              </label>
+              <span className="text-[9px] text-white/30 font-bold uppercase tracking-widest cursor-default">{sp.photo ? "Change" : "Upload Photo"}</span>
+            </div>
             <div className="flex-1 grid grid-cols-2 gap-2">
               <Input value={sp.name} onChange={(e) => update(sp.id, { name: e.target.value })} placeholder="Name" className="bg-white/5 border-white/10 text-white text-sm h-9" />
               <Input value={sp.role} onChange={(e) => update(sp.id, { role: e.target.value })} placeholder="Title / Role" className="bg-white/5 border-white/10 text-white/70 text-sm h-9" />

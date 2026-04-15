@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
@@ -13,7 +14,7 @@ import {
 } from "@/components/ui/pagination"
 import {
   MagnifyingGlass, UsersThree, CheckCircle, XCircle, CaretRight,
-  UserFocus, Clock, Phone, Buildings, Funnel, Trash
+  UserFocus, Clock, Phone, Buildings, Funnel, Trash, DownloadSimple
 } from "@phosphor-icons/react"
 
 interface Participant {
@@ -44,11 +45,12 @@ export default function ManagerParticipantsPage() {
   const [bulkDeleting, setBulkDeleting] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [activeTab, setActiveTab] = useState<"pending" | "verified" | "rejected">("pending")
+  const [attendanceFilter, setAttendanceFilter] = useState<"all" | "present" | "absent">("all")
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 50
 
   useEffect(() => { fetchParticipants() }, [])
-  useEffect(() => { setCurrentPage(1); setSelectedIds(new Set()) }, [query, activeTab])
+  useEffect(() => { setCurrentPage(1); setSelectedIds(new Set()) }, [query, activeTab, attendanceFilter])
 
   useEffect(() => {
     const eventSource = new EventSource("/api/participants/stream")
@@ -95,7 +97,13 @@ export default function ManagerParticipantsPage() {
     (p.verificationStatus || "pending") === activeTab
   )
 
-  const filtered = filteredByTab.filter(p => {
+  const filteredByAttendance = filteredByTab.filter(p => {
+    if (attendanceFilter === "present") return p.present === true
+    if (attendanceFilter === "absent") return p.present !== true
+    return true
+  })
+
+  const filtered = filteredByAttendance.filter(p => {
     if (!query.trim()) return true
     const q = query.toLowerCase()
     return (
@@ -115,6 +123,17 @@ export default function ManagerParticipantsPage() {
     verified: allParticipants.filter(p => (p.verificationStatus || "pending") === "verified").length,
     pending: allParticipants.filter(p => (p.verificationStatus || "pending") === "pending").length,
     rejected: allParticipants.filter(p => (p.verificationStatus || "pending") === "rejected").length,
+    present: allParticipants.filter(p => p.present).length,
+  }
+
+  const handleExportCSV = (status?: string, attendance?: string) => {
+    const params = new URLSearchParams()
+    if (status) params.append("status", status)
+    if (attendance) params.append("attendance", attendance)
+    
+    const qs = params.toString()
+    const url = qs ? `/api/participants/export?${qs}` : `/api/participants/export`
+    window.open(url, "_blank")
   }
 
   const handleVerificationUpdate = async (participantId: string, status: "pending" | "verified" | "rejected") => {
@@ -432,12 +451,13 @@ export default function ManagerParticipantsPage() {
   return (
     <div className="space-y-6">
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {[
           { label: "Total", value: counts.total, icon: <UsersThree weight="fill" className="w-5 h-5 text-blue-400" />, color: "text-white", accent: "bg-blue-500/10 border-blue-500/20" },
           { label: "Verified", value: counts.verified, icon: <CheckCircle weight="fill" className="w-5 h-5 text-green-400" />, color: "text-green-400", accent: "bg-green-500/10 border-green-500/20" },
           { label: "Pending", value: counts.pending, icon: <Clock weight="fill" className="w-5 h-5 text-amber-400" />, color: "text-amber-400", accent: "bg-amber-500/10 border-amber-500/20" },
           { label: "Rejected", value: counts.rejected, icon: <XCircle weight="fill" className="w-5 h-5 text-red-400" />, color: "text-red-400", accent: "bg-red-500/10 border-red-500/20" },
+          { label: "Present", value: counts.present, icon: <UserFocus weight="fill" className="w-5 h-5 text-purple-400" />, color: "text-purple-400", accent: "bg-purple-500/10 border-purple-500/20" },
         ].map((card, i) => (
           <motion.div key={card.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
             className="bg-[#131920]/80 backdrop-blur-md border border-white/5 rounded-2xl p-4 flex items-center gap-4 shadow-lg">
@@ -450,24 +470,84 @@ export default function ManagerParticipantsPage() {
         ))}
       </div>
 
+      {/* Toolbar */}
+      <div className="flex gap-3 flex-wrap">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button disabled={allParticipants.length === 0}
+              className="shrink-0 flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-sm tracking-wide transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:pointer-events-none data-[state=open]:bg-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)] focus:outline-none">
+              <DownloadSimple weight="bold" className="w-4 h-4 text-white/60" />
+              Export CSV
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" sideOffset={8} className="w-48 bg-[#131920]/95 backdrop-blur-xl border border-white/10 rounded-xl p-1.5 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)]">
+            <DropdownMenuItem onClick={() => handleExportCSV()} className="text-sm font-bold text-white/70 hover:text-white hover:bg-white/10 focus:bg-white/10 focus:text-white rounded-lg cursor-pointer px-3 py-2.5 outline-none transition-colors">
+              All Participants
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExportCSV(undefined, "present")} className="text-sm font-bold text-white/70 hover:text-white hover:bg-white/10 focus:bg-white/10 focus:text-white rounded-lg cursor-pointer px-3 py-2.5 outline-none transition-colors">
+              All Present
+            </DropdownMenuItem>
+            <div className="h-px bg-white/5 my-1 mx-2" />
+            <DropdownMenuItem onClick={() => handleExportCSV("verified")} className="text-sm font-bold text-green-400/70 hover:text-green-400 hover:bg-green-500/10 focus:bg-green-500/10 focus:text-green-400 rounded-lg cursor-pointer px-3 py-2.5 outline-none transition-colors">
+              Verified Only
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExportCSV("verified", "present")} className="text-sm font-bold text-green-400/70 hover:text-green-400 hover:bg-green-500/10 focus:bg-green-500/10 focus:text-green-400 rounded-lg cursor-pointer px-3 py-2.5 outline-none transition-colors">
+              Verified & Present
+            </DropdownMenuItem>
+            <div className="h-px bg-white/5 my-1 mx-2" />
+            <DropdownMenuItem onClick={() => handleExportCSV("pending")} className="text-sm font-bold text-amber-400/70 hover:text-amber-400 hover:bg-amber-500/10 focus:bg-amber-500/10 focus:text-amber-400 rounded-lg cursor-pointer px-3 py-2.5 outline-none transition-colors">
+              Pending Only
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExportCSV("rejected")} className="text-sm font-bold text-red-400/70 hover:text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-400 rounded-lg cursor-pointer px-3 py-2.5 outline-none transition-colors">
+              Rejected Only
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       {/* Main Table */}
       <div className="bg-[#131920]/80 backdrop-blur-2xl border border-white/5 rounded-3xl shadow-2xl relative">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FF9900]/0 via-[#FF9900] to-[#FF9900]/0 opacity-30 rounded-t-3xl" />
 
         <div className="p-5 border-b border-white/5 flex flex-col sm:flex-row gap-4 items-center justify-between bg-black/20 rounded-t-3xl">
-          <div className="relative w-full sm:max-w-sm group">
-            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-              <MagnifyingGlass weight="bold" className="w-4 h-4 text-[#FF9900]/50 group-focus-within:text-[#FF9900] transition-colors" />
+          <div className="flex flex-1 gap-3 w-full sm:w-auto">
+            <div className="relative w-full sm:max-w-sm group">
+              <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                <MagnifyingGlass weight="bold" className="w-4 h-4 text-[#FF9900]/50 group-focus-within:text-[#FF9900] transition-colors" />
+              </div>
+              <Input
+                type="text"
+                placeholder="Search name, email, phone, college..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="w-full bg-black/40 border border-white/10 text-white rounded-xl pl-11 pr-4 py-3 text-sm focus:border-[#FF9900]/50 focus:ring-1 focus:ring-[#FF9900]/50 transition-all font-medium placeholder:text-white/20"
+              />
             </div>
-            <Input
-              type="text"
-              placeholder="Search name, email, phone, college..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 text-white rounded-xl pl-11 pr-4 py-3 text-sm focus:border-[#FF9900]/50 focus:ring-1 focus:ring-[#FF9900]/50 transition-all font-medium placeholder:text-white/20"
-            />
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="shrink-0 flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm font-medium hover:bg-white/5 focus:border-[#FF9900]/50 outline-none transition-all">
+                  <span className="flex items-center gap-2">
+                    <Funnel weight="bold" className="w-4 h-4 text-[#FF9900]/50" />
+                    {attendanceFilter === "all" ? "All Attendance" : attendanceFilter === "present" ? "Present" : "Absent"}
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" sideOffset={8} className="w-44 bg-[#131920]/95 backdrop-blur-xl border border-white/10 rounded-xl p-1.5 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)]">
+                <DropdownMenuItem onClick={() => setAttendanceFilter("all")} className="text-sm font-bold text-white/70 hover:text-white hover:bg-white/10 focus:bg-white/10 focus:text-white rounded-lg cursor-pointer px-3 py-2.5 outline-none transition-colors">
+                  All Attendance
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setAttendanceFilter("present")} className="text-sm font-bold text-white/70 hover:text-white hover:bg-white/10 focus:bg-white/10 focus:text-white rounded-lg cursor-pointer px-3 py-2.5 outline-none transition-colors">
+                  Present
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setAttendanceFilter("absent")} className="text-sm font-bold text-white/70 hover:text-white hover:bg-white/10 focus:bg-white/10 focus:text-white rounded-lg cursor-pointer px-3 py-2.5 outline-none transition-colors">
+                  Absent
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-          <div className="flex items-center gap-2 text-white/40 text-xs font-bold uppercase tracking-widest">
+          
+          <div className="flex items-center gap-2 text-white/40 text-xs font-bold uppercase tracking-widest shrink-0">
             <Funnel weight="fill" className="w-3.5 h-3.5" />
             {filtered.length} result{filtered.length !== 1 ? "s" : ""}
           </div>

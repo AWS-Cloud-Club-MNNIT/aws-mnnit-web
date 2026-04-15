@@ -94,14 +94,16 @@ function ScheduleSection({ data }: { data: any }) {
   )
 }
 
-function SpeakersSection({ data }: { data: any }) {
+function SpeakersSection({ data, onImageClick }: { data: any; onImageClick: (url: string) => void }) {
   const speakers: any[] = data.speakers || []
   return (
     <div className="grid sm:grid-cols-2 gap-6">
       {speakers.length === 0 && <p className="text-white/30 text-sm col-span-2">No speakers added yet.</p>}
       {speakers.map((sp: any) => (
         <div key={sp.id} className="flex gap-4 p-5 bg-white/[0.02] border border-white/[0.06] rounded-2xl hover:border-white/15 transition-colors">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 bg-white/5 border border-white/10">
+          <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 bg-white/5 border border-white/10"
+               onClick={() => sp.photo && onImageClick(sp.photo)}
+               style={{ cursor: sp.photo ? "pointer" : "default" }}>
             {sp.photo
               ? <img src={sp.photo} alt={sp.name} className="w-full h-full object-cover" />
               : <div className="w-full h-full flex items-center justify-center text-white/20 text-2xl font-black">{sp.name?.[0]}</div>}
@@ -183,7 +185,7 @@ function FAQsSection({ data }: { data: any }) {
   )
 }
 
-function GallerySection({ data }: { data: any }) {
+function GallerySection({ data, onImageClick }: { data: any; onImageClick: (url: string) => void }) {
   const items: any[] = data.items || []
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -191,7 +193,7 @@ function GallerySection({ data }: { data: any }) {
       {items.map((item: any) => (
         <div key={item.id} className="group relative rounded-2xl overflow-hidden border border-white/[0.06] aspect-video bg-black/30">
           {item.type === "image" && item.url ? (
-            <img src={item.url} alt={item.caption || ""} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <img src={item.url} alt={item.caption || ""} onClick={() => onImageClick(item.url)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" />
           ) : item.type === "video" && item.url ? (
             (() => {
               const vid = getYouTubeId(item.url)
@@ -216,33 +218,24 @@ const SECTION_META: Record<string, { label: string; emoji: string }> = {
   gallery: { label: "Gallery", emoji: "🖼️" },
 }
 
-function renderSection(section: any) {
+function renderSection(section: any, onImageClick: (url: string) => void) {
   switch (section.type) {
     case "overview": return <OverviewSection key={section.id} data={section.data} />
     case "schedule": return <ScheduleSection key={section.id} data={section.data} />
-    case "speakers": return <SpeakersSection key={section.id} data={section.data} />
+    case "speakers": return <SpeakersSection key={section.id} data={section.data} onImageClick={onImageClick} />
     case "sponsors": return <SponsorsSection key={section.id} data={section.data} />
     case "faqs": return <FAQsSection key={section.id} data={section.data} />
-    case "gallery": return <GallerySection key={section.id} data={section.data} />
+    case "gallery": return <GallerySection key={section.id} data={section.data} onImageClick={onImageClick} />
     default: return null
   }
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function EventDetailClient({ event }: { event: any }) {
-  const [activeSection, setActiveSection] = React.useState<string | null>(null)
+  const [maximizedImage, setMaximizedImage] = React.useState<string | null>(null)
   const sortedSections = [...(event.sections || [])].sort((a, b) => a.order - b.order)
   const isUpcoming = new Date(event.date) > new Date()
   const regLinks: any[] = event.registrationLinks || []
-
-  // Set first section active on mount
-  React.useEffect(() => {
-    if (sortedSections.length > 0 && !activeSection) {
-      setActiveSection(sortedSections[0].id)
-    }
-  }, [sortedSections, activeSection])
-
-  const activeSectionData = sortedSections.find(s => s.id === activeSection)
 
   const share = () => {
     if (navigator.share) {
@@ -305,28 +298,20 @@ export default function EventDetailClient({ event }: { event: any }) {
         <div className="container mx-auto px-6 max-w-6xl py-10">
           <div className="flex flex-col lg:flex-row gap-10">
             {/* Main Sections */}
+            {/* Main Sections */}
             <div className="flex-1 min-w-0">
-              {/* Section Nav Tabs */}
-              {sortedSections.length > 0 && (
-                <div className="flex gap-2 flex-wrap mb-8 border-b border-white/[0.06] pb-4">
-                  {sortedSections.map(section => {
-                    const meta = SECTION_META[section.type] || { label: section.type, emoji: "📄" }
-                    return (
-                      <button key={section.id} type="button" onClick={() => setActiveSection(section.id)}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all ${activeSection === section.id ? "bg-primary text-white" : "bg-white/[0.04] text-white/50 hover:text-white hover:bg-white/[0.08] border border-white/[0.06]"}`}>
-                        <span>{meta.emoji}</span> {meta.label}
-                      </button>
-                    )
-                  })}
+              {/* All Sections */}
+              {sortedSections.length > 0 ? (
+                <div className="space-y-12">
+                  {sortedSections.map(section => (
+                    <section key={section.id} id={section.id} className="scroll-mt-24">
+                      <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                        <span>{SECTION_META[section.type]?.emoji}</span> {SECTION_META[section.type]?.label || section.type}
+                      </h2>
+                      {renderSection(section, setMaximizedImage)}
+                    </section>
+                  ))}
                 </div>
-              )}
-
-              {/* Active Section Content */}
-              {activeSectionData ? (
-                <section>
-                  <h2 className="text-2xl font-bold text-white mb-6">{SECTION_META[activeSectionData.type]?.label || activeSectionData.type}</h2>
-                  {renderSection(activeSectionData)}
-                </section>
               ) : (
                 <div className="text-center py-16 text-white/30">
                   <CalendarBlank className="w-10 h-10 mx-auto mb-4 opacity-30" />
@@ -405,6 +390,16 @@ export default function EventDetailClient({ event }: { event: any }) {
         </div>
       </main>
       <Footer />
+
+      {/* Lightbox / Maximized Image View */}
+      {maximizedImage && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4" onClick={() => setMaximizedImage(null)}>
+          <img src={maximizedImage} alt="Maximized view" className="max-w-full max-h-full rounded-2xl object-contain shadow-2xl" onClick={(e) => e.stopPropagation()} />
+          <button type="button" onClick={() => setMaximizedImage(null)} className="absolute top-6 right-6 text-white/50 hover:text-white bg-white/10 p-2 rounded-full backdrop-blur-md transition-all z-10">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
+          </button>
+        </div>
+      )}
     </>
   )
 }

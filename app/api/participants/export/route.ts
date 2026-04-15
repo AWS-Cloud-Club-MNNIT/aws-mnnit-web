@@ -31,6 +31,13 @@ export async function GET(req: Request) {
     if (statusFilter && ["pending", "verified", "rejected"].includes(statusFilter)) {
       query.verificationStatus = statusFilter;
     }
+    
+    const attendanceFilter = url.searchParams.get("attendance");
+    if (attendanceFilter === "present") {
+      query.present = true;
+    } else if (attendanceFilter === "absent") {
+      query.present = { $ne: true };
+    }
 
     const participants = await Participant.find(query).sort({ participantId: 1 });
 
@@ -77,7 +84,7 @@ export async function GET(req: Request) {
       status: 200,
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="aws_scd_2026_participants${statusFilter ? `_${statusFilter}` : ""}.csv"`,
+        "Content-Disposition": `attachment; filename="aws_scd_2026_participants${statusFilter ? `_${statusFilter}` : ""}${attendanceFilter ? `_${attendanceFilter}` : ""}.csv"`,
       },
     });
   } catch (error) {

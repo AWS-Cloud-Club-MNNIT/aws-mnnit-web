@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   allowedDevOrigins: ['protuberantly-horsehaired-dimple.ngrok-free.dev'],
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',

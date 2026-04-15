@@ -8,82 +8,112 @@ export interface IAnalyticsSession extends Document {
   screenResolution?: string;
   startTime: Date;
   lastActivity: Date;
-  duration: number; // Duration in seconds
-  pageViews: { path: string; timestamp: Date }[];
+  duration: number; // Engaged seconds (focus time accumulated, not wall-clock)
+  exitPage?: string; // Last page reliably flushed via sendBeacon/visibilitychange
+  pageViews: {
+    path: string;
+    timestamp: Date;
+    timeOnPage?: number; // Seconds of engaged time on this specific page
+  }[];
   isBounce: boolean;
-  
-  // Advanced tracking fields
+
+  // Traffic source
   referrer?: string;
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
-  
-  // Geographical location
+  utmTerm?: string;
+  utmContent?: string;
+
+  // Geographical location (from Vercel edge headers)
   country?: string;
   city?: string;
   region?: string;
-  
+
   // Web vitals
   performanceMetrics?: {
-    lcp: number;
-    cls: number;
-    fid: number;
-    ttfb: number;
-    inp: number;
+    lcp?: number;
+    cls?: number;
+    fid?: number;
+    ttfb?: number;
+    inp?: number;
   };
-  
-  // Custom events
-  events: { name: string; timestamp: Date; data?: any }[];
-  
+
+  // Max scroll depth reached (0-100) keyed by path
+  scrollDepths?: Record<string, number>;
+
+  // Custom events (scroll milestones, clicks, custom)
+  events: {
+    name: string;
+    timestamp: Date;
+    path?: string;
+    data?: Record<string, unknown>;
+  }[];
+
   createdAt: Date;
   updatedAt: Date;
 }
 
 const AnalyticsSessionSchema = new Schema<IAnalyticsSession>(
   {
-    sessionId: { type: String, required: true, unique: true },
-    deviceId: { type: String },
-    ipAddress: { type: String },
-    userAgent: { type: String },
+    sessionId:        { type: String, required: true, unique: true },
+    deviceId:         { type: String, index: true },
+    ipAddress:        { type: String },
+    userAgent:        { type: String },
     screenResolution: { type: String },
-    startTime: { type: Date, required: true, default: Date.now },
-    lastActivity: { type: Date, required: true, default: Date.now },
-    duration: { type: Number, default: 0 },
+    startTime:        { type: Date, required: true, default: Date.now },
+    lastActivity:     { type: Date, required: true, default: Date.now, index: true },
+    duration:         { type: Number, default: 0 },
+    exitPage:         { type: String },
     pageViews: [
       {
-        path: { type: String, required: true },
-        timestamp: { type: Date, default: Date.now },
+        path:       { type: String, required: true },
+        timestamp:  { type: Date, default: Date.now },
+        timeOnPage: { type: Number, default: 0 },
       },
     ],
     isBounce: { type: Boolean, default: true },
-    
-    referrer: { type: String },
-    utmSource: { type: String },
-    utmMedium: { type: String },
-    utmCampaign: { type: String },
-    
+
+    referrer:     { type: String },
+    utmSource:    { type: String },
+    utmMedium:    { type: String },
+    utmCampaign:  { type: String },
+    utmTerm:      { type: String },
+    utmContent:   { type: String },
+
     country: { type: String },
-    city: { type: String },
-    region: { type: String },
-    
+    city:    { type: String },
+    region:  { type: String },
+
     performanceMetrics: {
-      lcp: { type: Number },
-      cls: { type: Number },
-      fid: { type: Number },
+      lcp:  { type: Number },
+      cls:  { type: Number },
+      fid:  { type: Number },
       ttfb: { type: Number },
-      inp: { type: Number },
+      inp:  { type: Number },
     },
-    
+
+    // scrollDepths: { "/": 75, "/about": 50, ... }
+    scrollDepths: { type: Map, of: Number, default: {} },
+
     events: [
       {
-        name: { type: String, required: true },
+        name:      { type: String, required: true },
         timestamp: { type: Date, default: Date.now },
-        data: { type: Schema.Types.Mixed },
-      }
+        path:      { type: String },
+        data:      { type: Schema.Types.Mixed },
+      },
     ],
   },
   { timestamps: true }
 );
+
+// ── Indexes for fast query performance ─────────────────────────────────────────
+// sessionId is already unique: true above (creates an index automatically)
+AnalyticsSessionSchema.index({ createdAt: 1 });
+AnalyticsSessionSchema.index({ lastActivity: 1 });
+AnalyticsSessionSchema.index({ deviceId: 1, createdAt: 1 });
+AnalyticsSessionSchema.index({ country: 1 });
 
 const AnalyticsSession =
   models.AnalyticsSession ||
