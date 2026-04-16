@@ -5,7 +5,17 @@ import Link from "next/link"
 import { motion, useScroll, useTransform, useMotionValueEvent } from "framer-motion"
 import { CloudArrowUp, TerminalWindow, Brain, Lightning, CheckCircle, ArrowRight } from "@phosphor-icons/react"
 
-const services = [
+interface Service {
+  id: string;
+  number: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  theme: string;
+  features: string[];
+}
+
+const services: Service[] = [
   {
     id: "compute",
     number: "01",
@@ -64,7 +74,7 @@ const services = [
   },
 ]
 
-function TrackCard({ service, index, total, setActiveTab, isLast }: { service: any, index: number, total: number, setActiveTab: (id: string) => void, isLast: boolean }) {
+function TrackCard({ service, setActiveTab, isLast }: { service: Service, setActiveTab: (id: string) => void, isLast: boolean }) {
   const containerRef = React.useRef<HTMLDivElement>(null)
 
   // Track when this card's container is actively intersecting the viewport center
@@ -231,8 +241,6 @@ export function Services() {
             <TrackCard
               key={service.id}
               service={service}
-              index={index}
-              total={services.length}
               setActiveTab={setActiveTab}
               isLast={index === services.length - 1}
             />

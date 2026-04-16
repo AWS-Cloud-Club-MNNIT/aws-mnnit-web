@@ -2,7 +2,6 @@ import * as React from "react"
 import { Navbar } from "@/components/shared/Navbar"
 import { Footer } from "@/components/shared/Footer"
 import { CommitteeSection } from "@/components/sections/Committee"
-import { UsersThree } from "@phosphor-icons/react/dist/ssr"
 
 export const metadata = {
   title: "Committee | AWS Cloud Club MNNIT",

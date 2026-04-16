@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, use, useCallback } from "react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import Link from "next/link"
@@ -219,7 +220,7 @@ export default function UserUpdatePage({ params }: { params: Promise<{ id: strin
               <div className="absolute -inset-1 bg-gradient-to-tr from-[#FF9900]/50 to-amber-300/30 rounded-3xl blur opacity-30 group-hover:opacity-60 transition duration-500" />
               {qrDataUrl ? (
                 <div className="relative bg-white p-3 rounded-2xl shadow-2xl border-[4px] border-white/10 hover:scale-105 transition-transform duration-300">
-                  <img src={qrDataUrl} alt="QR Code" width={180} height={180} className="w-[180px] h-[180px]" />
+                  <Image src={qrDataUrl} alt="QR Code" width={180} height={180} className="w-[180px] h-[180px]" />
                 </div>
               ) : (
                 <div className="w-[204px] h-[204px] bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center">

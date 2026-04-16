@@ -7,7 +7,7 @@ export async function GET() {
     await connectDB()
     const tracks = await Track.find({}).sort({ createdAt: -1 })
     return NextResponse.json({ tracks })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch tracks' }, { status: 500 })
   }
 }
@@ -30,15 +30,16 @@ export async function POST(req: Request) {
 
     const track = await Track.create(body)
     return NextResponse.json({ track }, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Track creation error:', error)
-    if (error.code === 11000) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
       return NextResponse.json({ error: 'Slug already exists. Please choose a unique slug.' }, { status: 400 })
     }
-    if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map((err: any) => err.message)
+    const err = error as any;
+    if (err.name === 'ValidationError') {
+      const messages = Object.values(err.errors).map((e: any) => e.message)
       return NextResponse.json({ error: `Validation error: ${messages.join(', ')}` }, { status: 400 })
     }
-    return NextResponse.json({ error: error.message || 'Failed to create track' }, { status: 400 })
+    return NextResponse.json({ error: err.message || 'Failed to create track' }, { status: 400 })
   }
 }

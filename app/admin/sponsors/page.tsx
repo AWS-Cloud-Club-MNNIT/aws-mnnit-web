@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Plus, Trash, Image as ImageIcon, PencilSimple, X, InstagramLogo, LinkedinLogo, XLogo } from "@phosphor-icons/react"
@@ -205,7 +206,7 @@ export default function AdminSponsors() {
                   <ImageIcon /> Upload Logo
                   <input type="file" hidden accept="image/*" onChange={handleFileChange} />
                 </Label>
-                {formData.logo && <img src={formData.logo} alt="Preview" className="h-16 w-16 object-contain rounded border border-white/10 bg-white/5 p-1" />}
+                {formData.logo && <div className="h-16 w-16 relative border border-white/10 bg-white/5 p-1 rounded"><Image src={formData.logo} alt="Preview" fill className="object-contain" /></div>}
               </div>
               <p className="text-xs text-white/40 mt-1 italic">Upload a square logo (recommended: 200 × 200 px).</p>
               {!formData.logo && <p className="text-xs text-red-400 mt-1">Logo is required.</p>}
@@ -226,7 +227,7 @@ export default function AdminSponsors() {
           <Card key={sponsor._id} className="bg-card/20 border-white/[0.05] overflow-hidden group hover:border-[#7C3AED]/40 transition-colors flex flex-col h-full">
             <div className="h-48 w-full relative bg-white/5 flex items-center justify-center p-6">
               <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/60 pointer-events-none z-0" />
-              <img src={sponsor.logo} className="max-w-full max-h-full object-contain relative z-10 drop-shadow-lg filter" alt={sponsor.companyName} />
+              <Image src={sponsor.logo} fill className="max-w-full max-h-full object-contain relative z-10 drop-shadow-lg filter p-6" alt={sponsor.companyName} />
               
               <div className="absolute top-2 right-2 flex gap-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button onClick={() => handleEdit(sponsor)} className="p-2 bg-black/60 hover:bg-white/20 text-white rounded-lg backdrop-blur-md transition-colors border border-white/10">

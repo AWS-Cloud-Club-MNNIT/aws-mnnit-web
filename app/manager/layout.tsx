@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
 import { SignOut } from "@phosphor-icons/react"
@@ -31,8 +32,8 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
 
           {/* Logo & Brand Identity */}
           <div className="flex items-center gap-4 shrink-0">
-            <div className="bg-white p-1.5 rounded-lg shadow-inner">
-               <img src="/logo.svg" alt="AWS Logo" className="h-6 w-auto object-contain" />
+            <div className="bg-white p-1.5 rounded-lg shadow-inner relative w-9 h-9 flex items-center justify-center">
+               <Image src="/logo.svg" alt="AWS Logo" fill className="p-1 object-contain" priority />
             </div>
             <div>
               <h2 className="font-black text-sm text-white tracking-widest uppercase leading-none">Operations</h2>

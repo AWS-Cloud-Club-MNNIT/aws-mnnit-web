@@ -7,6 +7,7 @@ import {
   CheckCircle, MapPin, EnvelopeSimple, CalendarBlank, Clock,
   IdentificationCard, ArrowRight, ShieldCheck, Lock, DownloadSimple, Spinner
 } from "@phosphor-icons/react";
+import Image from "next/image";
 
 // ─── Canvas helpers ──────────────────────────────────────────────────────────
 function roundRect(
@@ -61,8 +62,8 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
           setIsManager(!!data.isManager);
           generateQRCode(data.participant.participantId);
         }
-      } catch (err) {
-        console.error(err);
+      } catch {
+        console.error("Error fetching participant");
       } finally {
         setLoading(false);
       }
@@ -77,7 +78,7 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
         width: 320, margin: 1, color: { dark: "#000000", light: "#ffffff" }
       });
       setQrCodeDataUrl(dataUrl);
-    } catch (err) { console.error("Error generating QR", err); }
+    } catch { console.error("Error generating QR"); }
   };
 
   const handleDownload = async () => {
@@ -395,7 +396,7 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
             <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em] mb-4 text-center">Scan at Registration</p>
             {qrCodeDataUrl ? (
               <div className="bg-white p-4 rounded-3xl shadow-xl hover:scale-[1.03] transition-transform duration-300">
-                <img src={qrCodeDataUrl} alt="Participant QR Code" width={200} height={200} className="block" />
+                <Image src={qrCodeDataUrl} alt="Participant QR Code" width={200} height={200} className="block mt-0" />
               </div>
             ) : (
               <div className="w-[232px] h-[232px] bg-white/5 rounded-3xl flex flex-col items-center justify-center border border-white/10 animate-pulse">

@@ -42,9 +42,12 @@ export async function GET(
           { status: 403 }
         );
       }
-      const { mobile, registrationId, ...safeData } = participant.toObject();
+      const participantObj = participant.toObject();
+      delete participantObj.mobile;
+      delete participantObj.registrationId;
+
       return NextResponse.json(
-        { participant: safeData, isAdmin: false, isManager: false },
+        { participant: participantObj, isAdmin: false, isManager: false },
         { status: 200 }
       );
     }

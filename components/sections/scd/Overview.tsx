@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Cpu, Globe, ChartBar, Cloud, Circuitry } from "@phosphor-icons/react";
+import { Cloud, Circuitry } from "@phosphor-icons/react";
 
 export function Overview() {
   return (

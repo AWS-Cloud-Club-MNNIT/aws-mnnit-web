@@ -14,7 +14,7 @@ export function Speakers() {
             Meet the Visionaries
           </h2>
           <p className="text-[#8892B0] text-lg max-w-2xl mx-auto font-medium">
-            We're gathering a world-class lineup of AWS Heroes, cloud architects, 
+            We&apos;re gathering a world-class lineup of AWS Heroes, cloud architects, 
             and industry leaders. The official reveal is just around the corner.
           </p>
         </div>

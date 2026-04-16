@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Navbar } from "@/components/shared/Navbar"
+import Image from "next/image"
 import { Footer } from "@/components/shared/Footer"
 import Link from "next/link"
 import {
@@ -101,11 +102,11 @@ function SpeakersSection({ data, onImageClick }: { data: any; onImageClick: (url
       {speakers.length === 0 && <p className="text-white/30 text-sm col-span-2">No speakers added yet.</p>}
       {speakers.map((sp: any) => (
         <div key={sp.id} className="flex gap-4 p-5 bg-white/[0.02] border border-white/[0.06] rounded-2xl hover:border-white/15 transition-colors">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 bg-white/5 border border-white/10"
+          <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 bg-white/5 border border-white/10 relative"
                onClick={() => sp.photo && onImageClick(sp.photo)}
                style={{ cursor: sp.photo ? "pointer" : "default" }}>
             {sp.photo
-              ? <img src={sp.photo} alt={sp.name} className="w-full h-full object-cover" />
+              ? <Image src={sp.photo} alt={sp.name} fill className="object-cover" />
               : <div className="w-full h-full flex items-center justify-center text-white/20 text-2xl font-black">{sp.name?.[0]}</div>}
           </div>
           <div className="flex-1 min-w-0">
@@ -150,8 +151,8 @@ function SponsorsSection({ data }: { data: any }) {
           <div className="flex flex-wrap gap-4">
             {group.map((sp: any) => (
               <a key={sp.id} href={sp.website || "#"} target="_blank" rel="noopener noreferrer"
-                className={`flex items-center justify-center p-4 rounded-2xl border transition-all hover:scale-105 h-20 min-w-[120px] ${TIER_STYLES[sp.tier] || TIER_STYLES.community}`}>
-                <img src={sp.logo} alt={sp.name} className="max-h-10 max-w-[120px] object-contain filter brightness-90 hover:brightness-110 transition-all" />
+                className={`flex items-center justify-center p-4 rounded-2xl border transition-all hover:scale-105 h-20 min-w-[120px] relative ${TIER_STYLES[sp.tier] || TIER_STYLES.community}`}>
+                <Image src={sp.logo} alt={sp.name} fill className="max-h-10 max-w-[120px] object-contain filter brightness-90 hover:brightness-110 transition-all" />
               </a>
             ))}
           </div>
@@ -193,7 +194,7 @@ function GallerySection({ data, onImageClick }: { data: any; onImageClick: (url:
       {items.map((item: any) => (
         <div key={item.id} className="group relative rounded-2xl overflow-hidden border border-white/[0.06] aspect-video bg-black/30">
           {item.type === "image" && item.url ? (
-            <img src={item.url} alt={item.caption || ""} onClick={() => onImageClick(item.url)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" />
+            <Image src={item.url} alt={item.caption || ""} fill onClick={() => onImageClick(item.url)} className="object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" />
           ) : item.type === "video" && item.url ? (
             (() => {
               const vid = getYouTubeId(item.url)
@@ -252,7 +253,7 @@ export default function EventDetailClient({ event }: { event: any }) {
         {/* Hero Banner */}
         <div className="relative h-[50vh] md:h-[65vh] w-full mt-20">
           <div className="absolute inset-0">
-            <img src={event.banner} alt={event.title} className="w-full h-full object-cover" />
+            <Image src={event.banner} alt={event.title} fill className="object-cover" priority />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-r from-background/40 via-transparent to-transparent" />
           </div>
@@ -394,7 +395,9 @@ export default function EventDetailClient({ event }: { event: any }) {
       {/* Lightbox / Maximized Image View */}
       {maximizedImage && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4" onClick={() => setMaximizedImage(null)}>
-          <img src={maximizedImage} alt="Maximized view" className="max-w-full max-h-full rounded-2xl object-contain shadow-2xl" onClick={(e) => e.stopPropagation()} />
+          <div className="relative w-full h-full max-w-5xl max-h-[80vh]">
+            <Image src={maximizedImage} alt="Maximized view" fill className="rounded-2xl object-contain shadow-2xl" onClick={(e) => e.stopPropagation()} />
+          </div>
           <button type="button" onClick={() => setMaximizedImage(null)} className="absolute top-6 right-6 text-white/50 hover:text-white bg-white/10 p-2 rounded-full backdrop-blur-md transition-all z-10">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
           </button>

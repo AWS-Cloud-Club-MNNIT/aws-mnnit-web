@@ -65,14 +65,14 @@ export default function ManagerParticipantsPage() {
           }
           return [updatedParticipant, ...prev]
         })
-      } catch (err) {}
+      } catch { }
     })
 
     eventSource.addEventListener("delete", (e) => {
       try {
         const { participantId } = JSON.parse(e.data)
         setAllParticipants(prev => prev.filter(p => p.participantId !== participantId))
-      } catch (err) {}
+      } catch { }
     })
 
     return () => {

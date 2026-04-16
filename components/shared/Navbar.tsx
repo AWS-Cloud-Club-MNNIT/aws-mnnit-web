@@ -3,7 +3,6 @@
 import * as React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import Image from "next/image";
 import { List, X } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "./Logo";

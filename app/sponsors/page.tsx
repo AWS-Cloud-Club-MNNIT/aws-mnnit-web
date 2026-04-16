@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { ArrowUpRight, Handshake, InstagramLogo, LinkedinLogo, XLogo } from "@phosphor-icons/react";
@@ -169,10 +170,11 @@ export default function SponsorsPage() {
                         
                         {/* Inner fluid bounding box preserving aspect ratio inside the 300px limit */}
                         <div className={`relative z-10 w-full h-full transition-transform duration-700 group-hover:scale-105`}>
-                          <img 
+                          <Image 
                             src={sponsor.logo} 
                             alt={sponsor.companyName}
-                            className="w-full h-full object-cover drop-shadow-[0_0_15px_rgba(255,255,255,0.05)]"
+                            fill
+                            className="object-cover drop-shadow-[0_0_15px_rgba(255,255,255,0.05)]"
                           />
                         </div>
                       </div>

@@ -90,7 +90,7 @@ export function Hero() {
                 className="w-full sm:w-auto bg-gray-100/80 dark:bg-white/5 backdrop-blur-md border-gray-300 dark:border-white/10 text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-white/10 rounded-full h-14 px-8 text-base font-semibold group flex items-center gap-2 shadow-[0_0_15px_rgba(0,0,0,0.05)] dark:shadow-[0_0_15px_rgba(255,255,255,0.05)] hover:shadow-[0_0_30px_rgba(124,58,237,0.1)] transition-all"
                 onClick={() => router.push('/scd')}
               >
-                Explore SCD '26
+                Explore SCD &apos;26
                 <GlobeHemisphereWestIcon
                   weight="duotone"
                   className="transition-transform group-hover:rotate-12"

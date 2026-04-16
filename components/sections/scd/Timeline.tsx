@@ -2,8 +2,6 @@
 
 import { motion } from "framer-motion";
 import { 
-  Clock, 
-  ShootingStar, 
   PresentationChart, 
   UsersThree, 
   Plug, 
@@ -63,7 +61,7 @@ export function Timeline() {
             </h3>
 
             <p className="text-[#8892B0] text-lg leading-relaxed mb-10 font-medium">
-              We're orchestrating the ultimate cloud-native experience, featuring world-class 
+              We&apos;re orchestrating the ultimate cloud-native experience, featuring world-class 
               speaker sessions, high-value networking lunches, and a dedicated connectivity 
               hub—all designed to provide an industry-grade professional environment for every builder.
             </p>

@@ -1,4 +1,5 @@
 import * as React from "react"
+import Image from "next/image"
 import { notFound } from "next/navigation"
 import connectDB from "@/lib/db"
 import Blog from "@/models/blog"
@@ -7,7 +8,32 @@ import { Footer } from "@/components/shared/Footer"
 import Link from "next/link"
 import { CaretLeft, CalendarBlank, Tag } from "@phosphor-icons/react/dist/ssr"
 
+import { MathWrapper } from "@/components/shared/MathWrapper"
 export const dynamic = "force-dynamic"
+
+// ─── Types ──────────────────────────────────────────────────────────────────
+interface BlockData {
+  html?: string;
+  url?: string;
+  title?: string;
+  images?: Array<{ url: string; alt?: string; caption?: string }>;
+  alignment?: "left" | "right" | "center";
+  imagePosition?: "left" | "right";
+  imageUrl?: string;
+  imageAlt?: string;
+  imageCaption?: string;
+  filename?: string;
+  language?: string;
+  code?: string;
+  type?: string;
+}
+
+interface Block {
+  id: string;
+  type: string;
+  data: BlockData;
+  order: number;
+}
 
 // ─── YouTube embed helper ─────────────────────────────────────────────────────
 function getYouTubeId(url: string): string | null {
@@ -16,7 +42,7 @@ function getYouTubeId(url: string): string | null {
 }
 
 // ─── Block Renderers ──────────────────────────────────────────────────────────
-function TextBlock({ data }: { data: any }) {
+function TextBlock({ data }: { data: BlockData }) {
   return (
     <div
       className="prose prose-invert prose-lg max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-white prose-p:text-white/75 prose-p:leading-relaxed prose-a:text-secondary hover:prose-a:text-secondary/80 prose-strong:text-white prose-code:text-secondary prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10 prose-blockquote:border-l-primary prose-blockquote:text-white/60"
@@ -25,31 +51,31 @@ function TextBlock({ data }: { data: any }) {
   )
 }
 
-function ImageBlock({ data }: { data: any }) {
-  const images: any[] = data.images || []
+function ImageBlock({ data }: { data: BlockData }) {
+  const images = data.images || []
   if (!images.length) return null
   const alignment = data.alignment || "center"
   const alignClass = alignment === "left" ? "justify-start" : alignment === "right" ? "justify-end" : "justify-center"
   const cols = Math.min(images.length, 3)
   return (
     <figure className={`flex flex-wrap gap-4 ${alignClass} my-2`}>
-      {images.map((img: any, i: number) => (
-        <div key={i} className={`overflow-hidden rounded-2xl border border-white/[0.05] ${cols === 1 ? "w-full" : cols === 2 ? "flex-1 min-w-[45%]" : "flex-1 min-w-[30%]"}`}>
-          <img src={img.url} alt={img.alt || img.caption || ""} className="w-full h-auto object-cover" loading="lazy" />
-          {img.caption && <figcaption className="text-center text-xs text-white/40 py-2 px-3">{img.caption}</figcaption>}
+      {images.map((img, i: number) => (
+        <div key={i} className={`overflow-hidden rounded-2xl border border-white/[0.05] relative ${cols === 1 ? "w-full aspect-video" : cols === 2 ? "flex-1 min-w-[45%] aspect-square" : "flex-1 min-w-[30%] aspect-square"}`}>
+          <Image src={img.url} alt={img.alt || img.caption || ""} fill className="object-cover" loading="lazy" />
+          {img.caption && <figcaption className="absolute bottom-0 inset-x-0 bg-black/60 text-center text-xs text-white/90 py-2 px-3 backdrop-blur-sm">{img.caption}</figcaption>}
         </div>
       ))}
     </figure>
   )
 }
 
-function MixedBlock({ data }: { data: any }) {
+function MixedBlock({ data }: { data: BlockData }) {
   const isRight = data.imagePosition === "right"
   return (
     <div className={`flex flex-col md:flex-row gap-8 items-start my-2 ${isRight ? "md:flex-row-reverse" : ""}`}>
       {data.imageUrl && (
-        <figure className="md:w-2/5 flex-shrink-0">
-          <img src={data.imageUrl} alt={data.imageAlt || ""} className="w-full rounded-2xl border border-white/[0.05] object-cover" loading="lazy" />
+        <figure className="md:w-2/5 flex-shrink-0 relative aspect-video">
+          <Image src={data.imageUrl} alt={data.imageAlt || ""} fill className="rounded-2xl border border-white/[0.05] object-cover" loading="lazy" />
           {data.imageCaption && <figcaption className="text-center text-xs text-white/40 mt-2">{data.imageCaption}</figcaption>}
         </figure>
       )}
@@ -58,7 +84,7 @@ function MixedBlock({ data }: { data: any }) {
   )
 }
 
-function CodeBlock({ data }: { data: any }) {
+function CodeBlock({ data }: { data: BlockData }) {
   return (
     <div className="rounded-2xl overflow-hidden border border-white/[0.08] bg-[#0d1117] my-2">
       {(data.filename || data.language) && (
@@ -72,7 +98,7 @@ function CodeBlock({ data }: { data: any }) {
   )
 }
 
-function EmbedBlock({ data }: { data: any }) {
+function EmbedBlock({ data }: { data: BlockData }) {
   if (data.type === "youtube" || (data.url && (data.url.includes("youtube") || data.url.includes("youtu.be")))) {
     const videoId = getYouTubeId(data.url)
     if (!videoId) return null
@@ -105,7 +131,7 @@ function EmbedBlock({ data }: { data: any }) {
   )
 }
 
-function renderBlock(block: any) {
+function renderBlock(block: Block) {
   switch (block.type) {
     case "text": return <TextBlock key={block.id} data={block.data} />
     case "image": return <ImageBlock key={block.id} data={block.data} />
@@ -123,7 +149,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!blog) return { title: "Post Not Found" }
   return {
     title: `${blog.title} | AWS Cloud Club MNNIT`,
-    description: (blog.blocks.find((b: any) => b.type === "text")?.data?.html || "").replace(/<[^>]+>/g, "").slice(0, 160),
+    description: (blog.blocks.find((b: Block) => b.type === "text")?.data?.html || "").replace(/<[^>]+>/g, "").slice(0, 160),
   }
 }
 
@@ -143,7 +169,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
         {/* Hero / Cover */}
         <div className="relative w-full h-[50vh] md:h-[65vh] overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/40 to-background z-10" />
-          <img src={blog.coverImage} alt={blog.title} className="w-full h-full object-cover" />
+          <Image src={blog.coverImage} alt={blog.title} fill className="object-cover" priority />
         </div>
 
         {/* Article */}
@@ -172,9 +198,9 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
           </div>
 
           {/* Blocks */}
-          <div className="space-y-8">
+          <MathWrapper className="space-y-8">
             {sortedBlocks.map(block => renderBlock(block))}
-          </div>
+          </MathWrapper>
 
           {/* Back link */}
           <div className="pt-16 border-t border-white/[0.06] mt-16">

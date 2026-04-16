@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import {
   DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent,
 } from "@dnd-kit/core"
@@ -129,8 +130,8 @@ function SpeakersEditor({ data, onChange }: { data: any; onChange: (d: any) => v
         <div key={sp.id} className="border border-white/[0.06] rounded-xl p-4 space-y-3">
           <div className="flex items-start gap-4">
             <div className="flex flex-col items-center gap-2">
-              <label className="w-16 h-16 rounded-full border border-dashed border-white/10 flex-shrink-0 overflow-hidden cursor-pointer hover:bg-white/5 transition-colors flex items-center justify-center bg-white/[0.02]" title="Upload Photo">
-                {sp.photo ? <img src={sp.photo} className="w-full h-full object-cover" alt="" /> : (uploading === sp.id ? <span className="text-[8px] text-white/30">…</span> : <Users className="w-5 h-5 text-white/20" />)}
+              <label className="w-16 h-16 rounded-full border border-dashed border-white/10 flex-shrink-0 overflow-hidden cursor-pointer hover:bg-white/5 transition-colors flex items-center justify-center bg-white/[0.02] relative" title="Upload Photo">
+                {sp.photo ? <Image src={sp.photo} fill className="object-cover" alt="" /> : (uploading === sp.id ? <span className="text-[8px] text-white/30">…</span> : <Users className="w-5 h-5 text-white/20" />)}
                 <input type="file" hidden accept="image/*" onChange={(e) => e.target.files?.[0] && uploadPhoto(sp.id, e.target.files[0])} />
               </label>
               <span className="text-[9px] text-white/30 font-bold uppercase tracking-widest cursor-default">{sp.photo ? "Change" : "Upload Photo"}</span>
@@ -173,8 +174,8 @@ function SponsorsEditor({ data, onChange }: { data: any; onChange: (d: any) => v
     <div className="space-y-3">
       {sponsors.map(sp => (
         <div key={sp.id} className="flex items-center gap-3">
-          <label className="w-14 h-10 border border-dashed border-white/10 rounded-lg overflow-hidden cursor-pointer hover:bg-white/5 flex items-center justify-center bg-white/[0.02] flex-shrink-0">
-            {sp.logo ? <img src={sp.logo} className="w-full h-full object-contain p-1" alt="" /> : (uploading === sp.id ? <span className="text-[8px] text-white/30">…</span> : <ImageIcon className="w-4 h-4 text-white/20" />)}
+          <label className="w-14 h-10 border border-dashed border-white/10 rounded-lg overflow-hidden cursor-pointer hover:bg-white/5 flex items-center justify-center bg-white/[0.02] flex-shrink-0 relative">
+            {sp.logo ? <Image src={sp.logo} fill className="p-1 object-contain" alt="" /> : (uploading === sp.id ? <span className="text-[8px] text-white/30">…</span> : <ImageIcon className="w-4 h-4 text-white/20" />)}
             <input type="file" hidden accept="image/*" onChange={(e) => e.target.files?.[0] && uploadLogo(sp.id, e.target.files[0])} />
           </label>
           <Input value={sp.name} onChange={(e) => update(sp.id, { name: e.target.value })} placeholder="Sponsor name" className="flex-1 bg-white/5 border-white/10 text-white text-sm h-8" />
@@ -232,7 +233,7 @@ function GalleryEditor({ data, onChange }: { data: any; onChange: (d: any) => vo
         {items.map(item => (
           <div key={item.id} className="border border-white/[0.06] rounded-xl overflow-hidden">
             {item.type === "image" && item.url
-              ? <img src={item.url} className="w-full h-20 object-cover" alt="" />
+              ? <div className="relative w-full h-20"><Image src={item.url} fill className="object-cover" alt="" /></div>
               : <div className="w-full h-20 bg-black/30 flex items-center justify-center"><YoutubeLogo className="w-6 h-6 text-red-400/70" /></div>
             }
             <div className="p-1.5">
@@ -256,8 +257,8 @@ function GalleryEditor({ data, onChange }: { data: any; onChange: (d: any) => vo
 function EventCard({ event, onEdit, onDelete }: { event: any; onEdit: () => void; onDelete: () => void }) {
   return (
     <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl overflow-hidden group">
-      <div className="h-32 relative overflow-hidden">
-        <img src={event.banner} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="" />
+      <div className="h-32 relative overflow-hidden relative">
+        <Image src={event.banner} fill className="object-cover group-hover:scale-105 transition-transform duration-500" alt="" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute top-2 right-2 flex gap-1.5">
           {event.featured && <span className="text-[9px] font-bold uppercase px-2 py-0.5 bg-yellow-500/20 text-yellow-400 border border-yellow-500/20 rounded-full flex items-center gap-1"><Star className="w-2.5 h-2.5" /> Featured</span>}
@@ -454,9 +455,9 @@ export default function AdminEvents() {
 
             <div>
               <Label className="text-white/40 text-xs mb-2 block">Banner Image *</Label>
-              <label className="block w-full h-32 border border-dashed border-white/10 rounded-xl overflow-hidden cursor-pointer hover:bg-white/5 transition-colors">
+              <label className="block w-full h-32 border border-dashed border-white/10 rounded-xl overflow-hidden cursor-pointer hover:bg-white/5 transition-colors relative">
                 {banner
-                  ? <img src={banner} className="w-full h-full object-cover" alt="Banner" />
+                  ? <Image src={banner} fill className="object-cover" alt="Banner" />
                   : <div className="flex flex-col items-center justify-center h-full gap-2 text-white/30"><ImageIcon className="w-7 h-7" /><span className="text-xs">{uploading ? "Uploading…" : "Upload banner"}</span></div>
                 }
                 <input type="file" hidden accept="image/*" onChange={(e) => e.target.files?.[0] && uploadBanner(e.target.files[0])} />

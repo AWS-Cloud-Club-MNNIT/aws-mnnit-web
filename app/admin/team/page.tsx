@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Plus, Trash, Image as ImageIcon, PencilSimple, X } from "@phosphor-icons/react"
@@ -173,7 +174,7 @@ export default function AdminTeam() {
                   <ImageIcon /> {uploading ? "Uploading..." : "Upload Profile Pic"}
                   <input type="file" hidden accept="image/*" onChange={handleFileChange} />
                 </Label>
-                {formData.image && <img src={formData.image} alt="Preview" className="h-12 w-12 object-cover rounded-full border border-white/10" />}
+                {formData.image && <div className="h-12 w-12 relative border border-white/10 rounded-full overflow-hidden"><Image src={formData.image} alt="Preview" fill className="object-cover" /></div>}
               </div>
               <p className="text-xs text-white/50">Upload a square image (1:1 ratio) for the best fit.</p>
             </div>
@@ -191,7 +192,7 @@ export default function AdminTeam() {
         {members.map((member) => (
           <Card key={member._id} className="bg-card/20 border-white/[0.05] overflow-hidden group">
             <div className="h-56 w-full relative">
-              <img src={member.image} className="w-full h-full object-cover" alt={member.name} />
+              <Image src={member.image} fill className="object-cover" alt={member.name} />
               <div className="absolute top-2 right-2 flex gap-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button onClick={() => handleEdit(member)} className="p-2 bg-black/60 hover:bg-white/20 text-white rounded-lg backdrop-blur-md transition-colors border border-white/10">
                   <PencilSimple weight="duotone" />

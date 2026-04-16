@@ -36,7 +36,7 @@ export default function FindTicketPage() {
       } else {
         toast.error(data.error || "No ticket found for this email");
       }
-    } catch (err) {
+    } catch {
       toast.error("An error occurred while searching");
     } finally {
       setLoading(false);

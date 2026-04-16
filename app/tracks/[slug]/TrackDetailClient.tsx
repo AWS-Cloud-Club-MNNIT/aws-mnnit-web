@@ -2,13 +2,27 @@
 
 import * as React from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Navbar } from "@/components/shared/Navbar"
 import { Footer } from "@/components/shared/Footer"
 import {
   CaretLeft, CaretDown, CaretRight, CheckCircle, Circle, YoutubeLogo,
   ArrowSquareOut, BookOpen, Video, Link as LinkIcon, Exam, Article,
-  GithubLogo, List, X
+  GithubLogo
 } from "@phosphor-icons/react"
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
+import ReactMarkdown from "react-markdown"
+import remarkMath from "remark-math"
+import rehypeKatex from "rehype-katex"
+import remarkGfm from "remark-gfm"
+import "katex/dist/katex.min.css"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Problem { id: string; title: string; url: string; difficulty: "easy" | "medium" | "hard" }
@@ -134,7 +148,14 @@ function TopicContent({
           <h3 className="text-xs font-bold uppercase tracking-widest text-primary/70 mb-3 flex items-center gap-2">
             <BookOpen className="w-4 h-4" /> Notes
           </h3>
-          <p className="text-white/70 text-sm leading-relaxed whitespace-pre-line">{topic.notes}</p>
+          <div className="prose prose-invert prose-sm max-w-none prose-headings:text-white prose-p:text-white/70 prose-a:text-secondary hover:prose-a:text-secondary/80 prose-strong:text-white prose-code:text-secondary prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10">
+            <ReactMarkdown
+              remarkPlugins={[remarkMath, remarkGfm]}
+              rehypePlugins={[rehypeKatex]}
+            >
+              {topic.notes}
+            </ReactMarkdown>
+          </div>
         </div>
       )}
 
@@ -281,7 +302,7 @@ function ProgressBar({ completed, total }: { completed: number; total: number })
         <span className="text-xs font-bold text-white/50">{completed}/{total}</span>
       </div>
       <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-        <div className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+        <div className="h-full bg-linear-to-r from-green-500 to-emerald-400 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
       </div>
       <p className="text-[10px] text-white/25 mt-1">{pct}% complete</p>
     </div>
@@ -304,7 +325,6 @@ export default function TrackDetailClient({ track }: { track: any }) {
     const sorted = [...(track.topics || [])].sort((a, b) => a.order - b.order)
     return sorted[0]?.id || null
   })
-  const [sidebarOpen, setSidebarOpen] = React.useState(false)
 
   const toggleComplete = (id: string) => {
     setCompletedIds(prev => {
@@ -320,67 +340,56 @@ export default function TrackDetailClient({ track }: { track: any }) {
   const sortedTopics = [...(track.topics || [])].sort((a, b) => a.order - b.order)
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <SidebarProvider defaultOpen={true}>
       <Navbar />
 
-      <div className="flex flex-1 pt-20">
-        {/* Mobile Sidebar Toggle */}
-        <button
-          type="button"
-          onClick={() => setSidebarOpen(o => !o)}
-          className="fixed bottom-6 right-6 z-50 lg:hidden w-12 h-12 rounded-full bg-primary shadow-xl shadow-primary/30 flex items-center justify-center text-white"
-        >
-          {sidebarOpen ? <X className="w-5 h-5" /> : <List className="w-5 h-5" />}
-        </button>
-
-        {/* Sidebar */}
-        <aside className={`fixed inset-y-0 left-0 z-40 w-72 bg-background border-r border-white/[0.06] pt-20 flex flex-col transition-transform duration-300 lg:translate-x-0 lg:static lg:z-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-          {/* Track Header */}
-          <div className="px-4 py-4 border-b border-white/[0.06]">
-            <Link href="/tracks" className="flex items-center gap-1.5 text-white/40 hover:text-white transition-colors text-xs mb-3 group">
-              <CaretLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" /> All Tracks
-            </Link>
-            <div className="flex items-center gap-3">
-              <img src={track.image} alt={track.title} className="w-10 h-10 rounded-xl object-cover border border-white/10" />
-              <div>
-                <h2 className="text-white font-bold text-sm leading-tight">{track.title}</h2>
-                {track.isFree && <span className="text-[9px] font-bold uppercase text-green-400">Free Track</span>}
-              </div>
+      <Sidebar className="border-r border-white/[0.06] bg-background">
+        <SidebarHeader className="pt-[100px] px-4 pb-4 border-b border-white/[0.06]">
+          <Link href="/tracks" className="flex items-center gap-1.5 text-white/40 hover:text-white transition-colors text-xs mb-3 group">
+            <CaretLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" /> All Tracks
+          </Link>
+          <div className="flex items-center gap-3">
+            <div className="relative w-10 h-10 shrink-0">
+              <Image src={track.image} alt={track.title} fill className="rounded-xl object-cover border border-white/10" />
+            </div>
+            <div>
+              <h2 className="text-white font-bold text-sm leading-tight">{track.title}</h2>
+              {track.isFree && <span className="text-[9px] font-bold uppercase text-green-400">Free Track</span>}
             </div>
           </div>
+        </SidebarHeader>
 
-          {/* Progress */}
-          <ProgressBar completed={completedIds.size} total={allTopicIds.length} />
+        {/* Progress */}
+        <ProgressBar completed={completedIds.size} total={allTopicIds.length} />
 
-          {/* Topic Tree */}
-          <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
-            {sortedTopics.map(topic => (
-              <TreeItem
-                key={topic.id}
-                topic={topic}
-                selectedId={selectedId}
-                completedIds={completedIds}
-                onSelect={(id) => { setSelectedId(id); setSidebarOpen(false) }}
-              />
-            ))}
-          </nav>
-        </aside>
+        <SidebarContent className="py-3 px-2 space-y-0.5">
+          {sortedTopics.map(topic => (
+            <TreeItem
+              key={topic.id}
+              topic={topic}
+              selectedId={selectedId}
+              completedIds={completedIds}
+              onSelect={(id) => setSelectedId(id)}
+            />
+          ))}
+        </SidebarContent>
+      </Sidebar>
 
-        {/* Overlay for mobile */}
-        {sidebarOpen && (
-          <div className="fixed inset-0 z-30 bg-black/60 lg:hidden" onClick={() => setSidebarOpen(false)} />
-        )}
-
-        {/* Main Content */}
-        <main className="flex-1 min-w-0 overflow-y-auto">
+      <SidebarInset className="flex-1 bg-background relative min-w-0">
+        <div className="sticky top-20 z-10 px-6 py-3 border-b border-white/[0.06] bg-background/95 backdrop-blur flex items-center">
+           <SidebarTrigger className="text-white bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white w-10 h-10 cursor-pointer" />
+           <span className="ml-3 text-sm font-semibold truncate md:hidden">{track.title}</span>
+        </div>
+        
+        <main className="w-full pt-28 pb-20">
           {selectedTopic ? (
-            <div className="px-6 md:px-12 py-10 max-w-4xl mx-auto">
+            <div className="px-6 md:px-12 max-w-4xl mx-auto w-full">
               <TopicContent topic={selectedTopic} completedIds={completedIds} onToggleComplete={toggleComplete} />
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center h-full py-24 text-center px-6">
-              <div className="w-16 h-16 rounded-2xl overflow-hidden mb-6 border border-white/10">
-                <img src={track.image} alt={track.title} className="w-full h-full object-cover" />
+            <div className="flex flex-col items-center justify-center py-24 text-center px-6 w-full">
+              <div className="w-16 h-16 rounded-2xl overflow-hidden mb-6 border border-white/10 relative">
+                <Image src={track.image} alt={track.title} fill className="object-cover" />
               </div>
               <h1 className="text-3xl font-black text-white mb-3">{track.title}</h1>
               <p className="text-white/50 max-w-md mb-6">{track.description}</p>
@@ -395,9 +404,9 @@ export default function TrackDetailClient({ track }: { track: any }) {
             </div>
           )}
         </main>
-      </div>
-
-      <Footer />
-    </div>
+        
+        <Footer />
+      </SidebarInset>
+    </SidebarProvider>
   )
 }

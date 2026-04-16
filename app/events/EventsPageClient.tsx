@@ -72,13 +72,22 @@ function RegBadge({ status }: { status: string }) {
   )
 }
 
-const REG_STATUS_BG: Record<string, string> = {
-  open: "bg-green-500 hover:bg-green-400 text-black",
-  closed: "bg-white/10 text-white/40 cursor-not-allowed",
-  coming_soon: "bg-yellow-500/20 text-yellow-400 border border-yellow-500/20 cursor-not-allowed",
+
+
+interface Event {
+  _id: string;
+  title: string;
+  slug: string;
+  banner: string;
+  date: string;
+  location?: string;
+  registrationStatus: string;
+  featured?: boolean;
+  tags?: string[];
+  sections?: any[];
 }
 
-interface EventCardProps { event: any }
+interface EventCardProps { event: Event }
 
 function EventCard({ event }: EventCardProps) {
   const isPast = new Date(event.date) < new Date()
@@ -155,7 +164,7 @@ function EventCard({ event }: EventCardProps) {
   )
 }
 
-export default function EventsPageClient({ events }: { events: any[] }) {
+export default function EventsPageClient({ events }: { events: Event[] }) {
   const [filter, setFilter] = React.useState<"all" | "upcoming" | "featured">("all")
 
   const filtered = events.filter(e => {

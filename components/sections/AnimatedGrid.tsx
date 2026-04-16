@@ -1,73 +1,72 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Image from "next/image";
 
-export function AnimatedGrid() {
-  const rows = 8;
-  const cols = 6;
-  const totalCells = rows * cols;
+const rows = 8;
+const cols = 6;
+const totalCells = rows * cols;
 
-  interface Agent {
-    id: number;
-    path: number[];
-    dir: "UP" | "DOWN" | "LEFT" | "RIGHT";
-    color: string;
-    lifespan: number;
-    age: number;
+interface Agent {
+  id: number;
+  path: number[];
+  dir: "UP" | "DOWN" | "LEFT" | "RIGHT";
+  color: string;
+  lifespan: number;
+  age: number;
+}
+
+const colors = [
+  "from-[#5B21B6] to-[#7C3AED]", // Purple
+  "from-[#4C1D95] to-[#6D28D9]", // Darker purple
+  "from-[#7C3AED] to-[#8B5CF6]", // Vibrant purple
+  "from-[#3B82F6] to-[#8B5CF6]", // Blue-purple blend
+];
+
+// Helper to spawn a packet from the screen edges (like network traffic entering the grid)
+const createAgent = (id: number): Agent => {
+  const isHorizontal = Math.random() > 0.5;
+  let startRow = 0;
+  let startCol = 0;
+  let dir: "UP" | "DOWN" | "LEFT" | "RIGHT" = "DOWN";
+
+  if (isHorizontal) {
+    startRow = Math.floor(Math.random() * rows);
+    if (Math.random() > 0.5) {
+      startCol = 0;
+      dir = "RIGHT";
+    } else {
+      startCol = cols - 1;
+      dir = "LEFT";
+    }
+  } else {
+    startCol = Math.floor(Math.random() * cols);
+    if (Math.random() > 0.5) {
+      startRow = 0;
+      dir = "DOWN";
+    } else {
+      startRow = rows - 1;
+      dir = "UP";
+    }
   }
 
-  const colors = [
-    "from-[#5B21B6] to-[#7C3AED]", // Purple
-    "from-[#4C1D95] to-[#6D28D9]", // Darker purple
-    "from-[#7C3AED] to-[#8B5CF6]", // Vibrant purple
-    "from-[#3B82F6] to-[#8B5CF6]", // Blue-purple blend
-  ];
-
-  // Helper to spawn a packet from the screen edges (like network traffic entering the grid)
-  const createAgent = (id: number): Agent => {
-    const isHorizontal = Math.random() > 0.5;
-    let startRow = 0;
-    let startCol = 0;
-    let dir: "UP" | "DOWN" | "LEFT" | "RIGHT" = "DOWN";
-
-    if (isHorizontal) {
-      startRow = Math.floor(Math.random() * rows);
-      if (Math.random() > 0.5) {
-        startCol = 0;
-        dir = "RIGHT";
-      } else {
-        startCol = cols - 1;
-        dir = "LEFT";
-      }
-    } else {
-      startCol = Math.floor(Math.random() * cols);
-      if (Math.random() > 0.5) {
-        startRow = 0;
-        dir = "DOWN";
-      } else {
-        startRow = rows - 1;
-        dir = "UP";
-      }
-    }
-
-    return {
-      id,
-      path: [startRow * cols + startCol],
-      dir,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      lifespan: Math.floor(Math.random() * 8) + 4, // Lives for 4 to 11 moves before safely dissolving
-      age: 0,
-    };
+  return {
+    id,
+    path: [startRow * cols + startCol],
+    dir,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    lifespan: Math.floor(Math.random() * 8) + 4, // Lives for 4 to 11 moves before safely dissolving
+    age: 0,
   };
+};
 
-  const [agents, setAgents] = useState<Agent[]>([]);
+export function AnimatedGrid() {
+  const [agents, setAgents] = useState<Agent[]>(() => 
+    Array.from({ length: 4 }).map((_, i) => createAgent(i + 1))
+  );
 
   useEffect(() => {
-    // Initial spawn
-    setAgents(Array.from({ length: 4 }).map((_, i) => createAgent(i + 1)));
-
     const interval = setInterval(() => {
       setAgents((prevAgents) => 
         prevAgents.map((agent) => {
@@ -76,7 +75,8 @@ export function AnimatedGrid() {
             return createAgent(agent.id);
           }
 
-          let { path, dir, age } = agent;
+          const { path, age } = agent;
+          let { dir } = agent;
           const pos = path[0];
           const row = Math.floor(pos / cols);
           const col = pos % cols;

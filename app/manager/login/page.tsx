@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { managerLoginAction } from "./actions"
@@ -28,7 +29,7 @@ export default function ManagerLogin() {
         router.push("/manager/participants")
         router.refresh()
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred.")
     } finally {
       setLoading(false)
@@ -42,8 +43,8 @@ export default function ManagerLogin() {
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FF9900] to-amber-500" />
 
         <CardHeader className="text-center pb-8 border-b border-white/5 mb-8 flex flex-col items-center">
-          <div className="w-16 h-16 bg-[#FF9900]/10 rounded-2xl flex items-center justify-center mb-4 border border-[#FF9900]/20">
-             <img src="/logo.svg" alt="Logo" className="w-8 h-8 object-contain drop-shadow-md" />
+          <div className="w-16 h-16 bg-[#FF9900]/10 rounded-2xl flex items-center justify-center mb-4 border border-[#FF9900]/20 relative">
+             <Image src="/logo.svg" alt="Logo" fill className="p-3 object-contain drop-shadow-md" priority />
           </div>
           <CardTitle className="text-3xl font-black text-white tracking-tight">Event Desk</CardTitle>
           <p className="text-sm text-[#FF9900] font-bold mt-2 uppercase tracking-widest">Manager Portal</p>

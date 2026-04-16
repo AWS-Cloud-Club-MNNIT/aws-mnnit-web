@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import {
   DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent,
 } from "@dnd-kit/core"
@@ -243,7 +244,7 @@ function TrackCard({ track, onEdit, onDelete }: { track: any; onEdit: () => void
   return (
     <div className="bg-white/[0.02] border border-white/5 rounded-2xl overflow-hidden group">
       <div className="aspect-video relative overflow-hidden bg-black/50">
-        <img src={track.image} alt={track.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" />
+        <Image src={track.image} fill className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" alt={track.title} />
         {track.isFree && <span className="absolute top-3 right-3 bg-green-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Free</span>}
       </div>
       <div className="p-5">
@@ -413,7 +414,7 @@ export default function AdminTracks() {
               <Label className="text-white/40 text-xs mb-2 block">Cover Image *</Label>
               <label className="block w-full h-36 border border-dashed border-white/10 rounded-xl overflow-hidden cursor-pointer hover:bg-white/5 transition-colors">
                 {image
-                  ? <img src={image} className="w-full h-full object-cover" alt="" />
+                  ? <Image src={image} fill className="object-cover" alt="" />
                   : <div className="flex flex-col items-center justify-center h-full gap-2 text-white/30"><ImageIcon className="w-7 h-7" /><span className="text-xs">{uploadingImage ? "Uploading…" : "Upload image"}</span></div>
                 }
                 <input type="file" hidden accept="image/*" onChange={(e) => e.target.files?.[0] && uploadImage(e.target.files[0])} />
