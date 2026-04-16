@@ -68,7 +68,7 @@ const TopicSchema = new Schema({
   id: { type: String, required: true },
   title: { type: String, required: true },
   description: { type: String, default: '' },
-  notes: { type: String, default: '' },
+  notes: { type: Schema.Types.Mixed, default: [] },
   order: { type: Number, default: 0 },
   problems: { type: [ProblemSchema], default: [] },
   videos: { type: [VideoSchema], default: [] },

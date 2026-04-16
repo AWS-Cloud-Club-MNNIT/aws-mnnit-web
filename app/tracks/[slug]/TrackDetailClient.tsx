@@ -122,7 +122,7 @@ function TopicContent({
   const isCompleted = completedIds.has(topic.id)
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
+    <div className="space-y-8 w-full">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -142,22 +142,83 @@ function TopicContent({
         </button>
       </div>
 
-      {/* Notes */}
-      {topic.notes && (
+      {/* Notes — supports both legacy string and new block format */}
+      {topic.notes && (Array.isArray(topic.notes) ? topic.notes.length > 0 : !!topic.notes) && (
         <div className="bg-primary/[0.06] border border-primary/20 rounded-2xl p-5">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-primary/70 mb-3 flex items-center gap-2">
+          <h3 className="text-xs font-bold uppercase tracking-widest text-primary/70 mb-4 flex items-center gap-2">
             <BookOpen className="w-4 h-4" /> Notes
           </h3>
-          <div className="prose prose-invert prose-sm max-w-none prose-headings:text-white prose-p:text-white/70 prose-a:text-secondary hover:prose-a:text-secondary/80 prose-strong:text-white prose-code:text-secondary prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10">
-            <ReactMarkdown
-              remarkPlugins={[remarkMath, remarkGfm]}
-              rehypePlugins={[rehypeKatex]}
-            >
-              {topic.notes}
-            </ReactMarkdown>
-          </div>
+          {/* Legacy string notes */}
+          {typeof topic.notes === "string" && (
+            <div className="prose prose-invert prose-sm max-w-none prose-headings:text-white prose-p:text-white/70 prose-a:text-secondary hover:prose-a:text-secondary/80 prose-strong:text-white prose-code:text-secondary prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10">
+              <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>
+                {topic.notes}
+              </ReactMarkdown>
+            </div>
+          )}
+          {/* New block-based notes */}
+          {Array.isArray(topic.notes) && (
+            <div className="space-y-5">
+              {(topic.notes as any[]).map((block: any, i: number) => {
+                if (block.type === "text") {
+                  return (
+                    <div key={block.id || i} className="prose prose-invert prose-sm max-w-none prose-headings:text-white prose-p:text-white/70 prose-a:text-secondary prose-strong:text-white prose-code:text-secondary prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10"
+                      dangerouslySetInnerHTML={{ __html: block.data?.html || "" }} />
+                  )
+                }
+                if (block.type === "code") {
+                  return (
+                    <div key={block.id || i} className="rounded-2xl overflow-hidden border border-white/[0.08] bg-[#0d1117]">
+                      {(block.data?.filename || block.data?.language) && (
+                        <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.06] bg-white/[0.03]">
+                          <span className="text-xs font-mono text-white/40">{block.data.filename || ""}</span>
+                          {block.data.language && <span className="text-[10px] font-bold uppercase tracking-widest text-white/20 px-2 py-0.5 bg-white/5 rounded">{block.data.language}</span>}
+                        </div>
+                      )}
+                      <pre className="p-5 overflow-x-auto"><code className="font-mono text-sm text-green-300/90 leading-relaxed whitespace-pre">{block.data?.code}</code></pre>
+                    </div>
+                  )
+                }
+                if (block.type === "image") {
+                  const images: any[] = block.data?.images || []
+                  if (!images.length) return null
+                  const alignment = block.data?.alignment || "center"
+                  const alignClass = alignment === "left" ? "justify-start" : alignment === "right" ? "justify-end" : "justify-center"
+                  const cols = Math.min(images.length, 3)
+                  const sizeClass = { small: "max-w-xs", medium: "max-w-xl", large: "max-w-3xl", full: "w-full" }[block.data?.displaySize as string] || "w-full"
+                  return (
+                    <figure key={block.id || i} className={`${sizeClass} ${alignment === "left" ? "mr-auto" : alignment === "right" ? "ml-auto" : "mx-auto"} my-4`}>
+                      <div className={`flex flex-wrap gap-3 ${alignClass}`}>
+                        {images.map((img: any, j: number) => (
+                          <div key={j} className={`overflow-hidden rounded-2xl border border-white/[0.05] relative ${cols === 1 ? "w-full aspect-video" : cols === 2 ? "flex-1 min-w-[45%] aspect-square" : "flex-1 min-w-[30%] aspect-square"}`}>
+                            <img src={img.url} alt={img.caption || ""} className="w-full h-full object-cover" loading="lazy" />
+                            {img.caption && <figcaption className="absolute bottom-0 inset-x-0 bg-black/60 text-center text-xs text-white/90 py-2 px-3 backdrop-blur-sm">{img.caption}</figcaption>}
+                          </div>
+                        ))}
+                      </div>
+                    </figure>
+                  )
+                }
+                if (block.type === "math") {
+                  const latex = block.data?.latex || ""
+                  const mathStr = latex.trim().startsWith("$$") ? latex : `$$${latex}$$`
+                  return (
+                    <div key={block.id || i} className="bg-black/20 border border-white/[0.06] rounded-xl p-4">
+                      <div className="prose prose-invert max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                          {mathStr}
+                        </ReactMarkdown>
+                      </div>
+                    </div>
+                  )
+                }
+                return null
+              })}
+            </div>
+          )}
         </div>
       )}
+
 
       {/* Videos */}
       {topic.videos && topic.videos.length > 0 && (
@@ -170,29 +231,32 @@ function TopicContent({
             {topic.videos.map((v: VideoItem) => {
               const videoId = getYouTubeId(v.youtubeUrl)
               return (
-                <div key={v.id} className="rounded-2xl overflow-hidden border border-white/[0.08]">
-                  {v.title && (
-                    <div className="px-4 py-2.5 bg-white/[0.03] border-b border-white/[0.06] flex items-center gap-2">
-                      <YoutubeLogo className="w-4 h-4 text-red-400" />
-                      <span className="text-white/70 text-sm font-medium">{v.title}</span>
-                    </div>
-                  )}
-                  {videoId ? (
-                    <div className="relative aspect-video">
-                      <iframe
-                        src={`https://www.youtube.com/embed/${videoId}`}
-                        title={v.title || "Video"}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        className="absolute inset-0 w-full h-full"
-                      />
-                    </div>
-                  ) : (
-                    <div className="p-4 flex items-center gap-3 bg-red-400/[0.03]">
-                      <YoutubeLogo className="w-6 h-6 text-red-400/60" />
-                      <a href={v.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-red-400/80 hover:text-red-400 transition-colors">{v.youtubeUrl}</a>
-                    </div>
-                  )}
+                <div key={v.id} className="px-4 md:px-8">
+                  <div className="rounded-2xl overflow-hidden border border-white/[0.08]">
+                    {v.title && (
+                      <div className="px-4 py-2.5 bg-white/[0.03] border-b border-white/[0.06] flex items-center gap-2">
+                        <YoutubeLogo className="w-4 h-4 text-red-400" />
+                        <span className="text-white/70 text-sm font-medium">{v.title}</span>
+                      </div>
+                    )}
+                    {videoId ? (
+                      <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+                        <iframe
+                          src={`https://www.youtube.com/embed/${videoId}`}
+                          title={v.title || "Video"}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                          loading="lazy"
+                          className="absolute inset-0 w-full h-full border-t border-white/[0.08]"
+                        />
+                      </div>
+                    ) : (
+                      <div className="p-4 flex items-center gap-3 bg-red-400/[0.03]">
+                        <YoutubeLogo className="w-6 h-6 text-red-400/60" />
+                        <a href={v.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-red-400/80 hover:text-red-400 transition-colors">{v.youtubeUrl}</a>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )
             })}
@@ -383,7 +447,7 @@ export default function TrackDetailClient({ track }: { track: any }) {
         
         <main className="w-full pt-28 pb-20">
           {selectedTopic ? (
-            <div className="px-6 md:px-12 max-w-4xl mx-auto w-full">
+            <div className="px-4 md:px-8 w-full">
               <TopicContent topic={selectedTopic} completedIds={completedIds} onToggleComplete={toggleComplete} />
             </div>
           ) : (

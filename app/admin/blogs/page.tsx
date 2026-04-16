@@ -30,13 +30,13 @@ import {
   Plus, Trash, Image as ImageIcon, TextT, Code, YoutubeLogo,
   Link as LinkIcon, ArrowsOutCardinal, PencilSimple, Eye,
   FloppyDisk, CheckCircle, X, CaretLeft, DotsSixVertical,
-  Columns, BookOpen
+  Columns, BookOpen, MathOperations
 } from "@phosphor-icons/react"
 
 const lowlight = createLowlight()
 
 // ─── Types ──────────────────────────────────────────────────────────────────
-type BlockType = "text" | "image" | "mixed" | "code" | "embed"
+type BlockType = "text" | "image" | "mixed" | "code" | "embed" | "math"
 interface ContentBlock { id: string; type: BlockType; order: number; data: any }
 
 function nanoidSimple() { return Math.random().toString(36).slice(2, 10) }
@@ -140,9 +140,24 @@ function ImageBlockEditor({ data, onChange }: { data: any; onChange: (d: any) =>
           <input type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
         </label>
       </div>
-      <div className="flex gap-2">
-        {(["left","center","right","full"] as const).map(a => (
+      <div className="flex flex-wrap gap-2 items-center">
+        <span className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Align:</span>
+        {(["left","center","right"] as const).map(a => (
           <button key={a} type="button" onClick={() => onChange({ ...data, alignment: a })} className={`text-xs px-2 py-1 rounded ${data.alignment === a ? "bg-primary text-white" : "bg-white/5 text-white/50"}`}>{a}</button>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-2 items-center">
+        <span className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Size:</span>
+        {([
+          { value: "small",  label: "Small (25%)"  },
+          { value: "medium", label: "Medium (50%)" },
+          { value: "large",  label: "Large (75%)"  },
+          { value: "full",   label: "Full Width"   },
+        ] as const).map(({ value, label }) => (
+          <button key={value} type="button" onClick={() => onChange({ ...data, displaySize: value })}
+            className={`text-xs px-2 py-1 rounded ${(data.displaySize ?? "full") === value ? "bg-primary text-white" : "bg-white/5 text-white/50"}`}>
+            {label}
+          </button>
         ))}
       </div>
     </div>
@@ -218,6 +233,28 @@ function EmbedBlockEditor({ data, onChange }: { data: any; onChange: (d: any) =>
   )
 }
 
+function MathBlockEditor({ data, onChange }: { data: any; onChange: (d: any) => void }) {
+  return (
+    <div className="space-y-2">
+      <div className="text-[10px] text-white/30 uppercase tracking-widest font-bold">LaTeX / KaTeX Formula</div>
+      <Textarea
+        rows={5}
+        placeholder={`Enter LaTeX math:\n\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}\n\nFor display math use $$…$$ syntax.\nFor inline math use $…$ syntax.`}
+        value={data.latex || ""}
+        onChange={(e) => onChange({ latex: e.target.value })}
+        className="font-mono text-xs bg-black/30 border-white/10 text-amber-200 resize-y"
+      />
+      {data.latex && (
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
+          <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold mb-2">LaTeX Source (renders on frontend with KaTeX)</p>
+          <code className="text-amber-200/80 text-xs font-mono break-all">{data.latex}</code>
+        </div>
+      )}
+      <p className="text-[10px] text-white/25">Use <code className="text-white/40">$$…$$</code> for display math or <code className="text-white/40">$…$</code> for inline math.</p>
+    </div>
+  )
+}
+
 // ─── Blog Card ───────────────────────────────────────────────────────────────
 function BlogCard({ blog, onEdit, onDelete }: { blog: any; onEdit: () => void; onDelete: () => void }) {
   return (
@@ -267,6 +304,7 @@ function BlockPreview({ block }: { block: ContentBlock }) {
   if (block.type === "code") return (
     <div className="bg-black/40 rounded-lg p-3 border border-white/10">
       {block.data.filename && <div className="text-xs text-white/40 mb-2 font-mono">{block.data.filename}</div>}
+      {block.data.language && <div className="text-[10px] font-bold uppercase tracking-widest text-white/20 mb-2">{block.data.language}</div>}
       <pre className="font-mono text-xs text-green-400 overflow-x-auto whitespace-pre">{block.data.code}</pre>
     </div>
   )
@@ -274,6 +312,12 @@ function BlockPreview({ block }: { block: ContentBlock }) {
     <div className="bg-black/20 rounded-lg p-3 border border-white/10 flex items-center gap-3">
       <YoutubeLogo className="w-8 h-8 text-red-400" />
       <div><p className="text-white/60 text-sm">{block.data.title || block.data.url}</p><p className="text-white/30 text-xs">{block.data.url}</p></div>
+    </div>
+  )
+  if (block.type === "math") return (
+    <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-3 flex items-start gap-3">
+      <MathOperations className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+      <code className="text-amber-200/80 text-xs font-mono break-all">{block.data.latex || <em className="text-white/30 not-italic">Empty math block</em>}</code>
     </div>
   )
   return null
@@ -339,6 +383,7 @@ export default function AdminBlogs() {
         : type === "image" ? { images: [], alignment: "center", size: "medium" }
         : type === "mixed" ? { imageUrl: "", html: "", imagePosition: "left", imageCaption: "" }
         : type === "code" ? { code: "", language: "javascript", filename: "" }
+        : type === "math" ? { latex: "" }
         : { url: "", type: "link", title: "", caption: "" }
     }
     setBlocks(prev => [...prev, newBlock])
@@ -455,6 +500,7 @@ export default function AdminBlogs() {
                     {block.type === "mixed" && <MixedBlockEditor data={block.data} onChange={(d) => updateBlock(block.id, d)} />}
                     {block.type === "code" && <CodeBlockEditor data={block.data} onChange={(d) => updateBlock(block.id, d)} />}
                     {block.type === "embed" && <EmbedBlockEditor data={block.data} onChange={(d) => updateBlock(block.id, d)} />}
+                    {block.type === "math" && <MathBlockEditor data={block.data} onChange={(d) => updateBlock(block.id, d)} />}
                   </SortableBlock>
                 ))}
               </SortableContext>
@@ -470,6 +516,7 @@ export default function AdminBlogs() {
                   { type: "mixed", icon: Columns, label: "Mixed" },
                   { type: "code", icon: Code, label: "Code" },
                   { type: "embed", icon: YoutubeLogo, label: "Embed" },
+                  { type: "math", icon: MathOperations, label: "Math" },
                 ] as const).map(({ type, icon: Icon, label }) => (
                   <button key={type} type="button" onClick={() => addBlock(type as BlockType)}
                     className="flex items-center gap-2 px-4 py-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] rounded-xl text-white/60 hover:text-white transition-all text-sm">

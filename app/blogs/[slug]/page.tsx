@@ -18,6 +18,7 @@ interface BlockData {
   title?: string;
   images?: Array<{ url: string; alt?: string; caption?: string }>;
   alignment?: "left" | "right" | "center";
+  displaySize?: "small" | "medium" | "large" | "full";
   imagePosition?: "left" | "right";
   imageUrl?: string;
   imageAlt?: string;
@@ -26,6 +27,7 @@ interface BlockData {
   language?: string;
   code?: string;
   type?: string;
+  latex?: string;
 }
 
 interface Block {
@@ -57,14 +59,28 @@ function ImageBlock({ data }: { data: BlockData }) {
   const alignment = data.alignment || "center"
   const alignClass = alignment === "left" ? "justify-start" : alignment === "right" ? "justify-end" : "justify-center"
   const cols = Math.min(images.length, 3)
+  // Size controls max-width of the whole block
+  const sizeClass: Record<string, string> = {
+    small:  "max-w-xs",
+    medium: "max-w-xl",
+    large:  "max-w-3xl",
+    full:   "w-full",
+  }
+  const wrapClass = sizeClass[data.displaySize || "full"] ?? "w-full"
   return (
-    <figure className={`flex flex-wrap gap-4 ${alignClass} my-2`}>
-      {images.map((img, i: number) => (
-        <div key={i} className={`overflow-hidden rounded-2xl border border-white/[0.05] relative ${cols === 1 ? "w-full aspect-video" : cols === 2 ? "flex-1 min-w-[45%] aspect-square" : "flex-1 min-w-[30%] aspect-square"}`}>
-          <Image src={img.url} alt={img.alt || img.caption || ""} fill className="object-cover" loading="lazy" />
-          {img.caption && <figcaption className="absolute bottom-0 inset-x-0 bg-black/60 text-center text-xs text-white/90 py-2 px-3 backdrop-blur-sm">{img.caption}</figcaption>}
-        </div>
-      ))}
+    <figure className={`${wrapClass} ${
+      alignment === "left" ? "mr-auto" : alignment === "right" ? "ml-auto" : "mx-auto"
+    } my-4`}>
+      <div className={`flex flex-wrap gap-4 ${alignClass}`}>
+        {images.map((img, i: number) => (
+          <div key={i} className={`overflow-hidden rounded-2xl border border-white/[0.05] relative ${
+            cols === 1 ? "w-full aspect-video" : cols === 2 ? "flex-1 min-w-[45%] aspect-square" : "flex-1 min-w-[30%] aspect-square"
+          }`}>
+            <Image src={img.url} alt={img.alt || img.caption || ""} fill className="object-cover" loading="lazy" />
+            {img.caption && <figcaption className="absolute bottom-0 inset-x-0 bg-black/60 text-center text-xs text-white/90 py-2 px-3 backdrop-blur-sm">{img.caption}</figcaption>}
+          </div>
+        ))}
+      </div>
     </figure>
   )
 }
@@ -100,17 +116,19 @@ function CodeBlock({ data }: { data: BlockData }) {
 
 function EmbedBlock({ data }: { data: BlockData }) {
   if (data.type === "youtube" || (data.url && (data.url.includes("youtube") || data.url.includes("youtu.be")))) {
-    const videoId = getYouTubeId(data.url)
+    const videoId = getYouTubeId(data.url || "")
     if (!videoId) return null
     return (
-      <figure className="my-2">
-        <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-white/[0.08] shadow-2xl shadow-black/50">
+      <figure className="my-4 px-4 md:px-8">
+        {/* Wrapper: do NOT use overflow-hidden — it can trap scroll events on mobile */}
+        <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
           <iframe
             src={`https://www.youtube.com/embed/${videoId}`}
             title={data.title || "YouTube video"}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
-            className="absolute inset-0 w-full h-full"
+            loading="lazy"
+            className="absolute inset-0 w-full h-full rounded-2xl border border-white/[0.08]"
           />
         </div>
         {data.title && <figcaption className="text-center text-xs text-white/40 mt-2">{data.title}</figcaption>}
@@ -131,6 +149,23 @@ function EmbedBlock({ data }: { data: BlockData }) {
   )
 }
 
+/**
+ * MathBlock — renders LaTeX formulas using the parent MathWrapper's KaTeX auto-render.
+ * We output the raw LaTeX wrapped in $$ delimiters so MathWrapper picks it up.
+ */
+function MathBlock({ data }: { data: BlockData }) {
+  const latex = data.latex?.trim() || ""
+  if (!latex) return null
+  // If user already wrapped with $$ keep as-is, otherwise wrap for display mode
+  const content = latex.startsWith("$$") ? latex : `$$${latex}$$`
+  return (
+    <div className="overflow-x-auto rounded-2xl bg-black/20 border border-white/[0.08] px-6 py-5 my-2 text-center">
+      {/* MathWrapper's auto-render will find and render this */}
+      <span dangerouslySetInnerHTML={{ __html: content }} />
+    </div>
+  )
+}
+
 function renderBlock(block: Block) {
   switch (block.type) {
     case "text": return <TextBlock key={block.id} data={block.data} />
@@ -138,6 +173,7 @@ function renderBlock(block: Block) {
     case "mixed": return <MixedBlock key={block.id} data={block.data} />
     case "code": return <CodeBlock key={block.id} data={block.data} />
     case "embed": return <EmbedBlock key={block.id} data={block.data} />
+    case "math": return <MathBlock key={block.id} data={block.data} />
     default: return null
   }
 }
@@ -145,11 +181,36 @@ function renderBlock(block: Block) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   await connectDB()
-  const blog = await Blog.findOne({ slug })
+  const blog = await Blog.findOne({ slug }).lean()
   if (!blog) return { title: "Post Not Found" }
+  
+  const description = (blog.blocks?.find((b: Block) => b.type === "text")?.data?.html || "").replace(/<[^>]+>/g, "").slice(0, 160) || "Read the latest post from AWS Cloud Club MNNIT.";
+  const title = `${blog.title} | AWS Cloud Club MNNIT`;
+  
   return {
-    title: `${blog.title} | AWS Cloud Club MNNIT`,
-    description: (blog.blocks.find((b: Block) => b.type === "text")?.data?.html || "").replace(/<[^>]+>/g, "").slice(0, 160),
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      url: `https://www.awscloudclub.mnnit.ac.in/blogs/${slug}`,
+      images: [
+        {
+          url: blog.coverImage || "/og-image.jpg",
+          alt: blog.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [blog.coverImage || "/og-image.jpg"],
+    },
+    alternates: {
+      canonical: `https://www.awscloudclub.mnnit.ac.in/blogs/${slug}`,
+    },
   }
 }
 
@@ -161,9 +222,28 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
   if (!blog) return notFound()
 
   const sortedBlocks = [...blog.blocks].sort((a, b) => a.order - b.order)
+  const description = (sortedBlocks.find((b: Block) => b.type === "text")?.data?.html || "").replace(/<[^>]+>/g, "").slice(0, 160) || "Read the latest post from AWS Cloud Club MNNIT.";
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: blog.title,
+    image: [blog.coverImage || "https://www.awscloudclub.mnnit.ac.in/og-image.jpg"],
+    datePublished: blog.createdAt ? new Date(blog.createdAt).toISOString() : new Date().toISOString(),
+    dateModified: blog.updatedAt ? new Date(blog.updatedAt).toISOString() : new Date().toISOString(),
+    author: [{
+      "@type": "Person",
+      name: "AWS Cloud Club MNNIT",
+    }],
+    description: description,
+  };
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Navbar />
       <main className="min-h-screen bg-background">
         {/* Hero / Cover */}
@@ -172,8 +252,8 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
           <Image src={blog.coverImage} alt={blog.title} fill className="object-cover" priority />
         </div>
 
-        {/* Article */}
-        <article className="container mx-auto px-6 max-w-3xl -mt-24 relative z-20 pb-24">
+        {/* Article — overflow-x-hidden prevents wide blocks (code, images) from causing horizontal scroll */}
+        <article className="-mt-24 relative z-20 pb-24 px-4 md:px-8 overflow-x-hidden">
           {/* Tags */}
           <div className="flex flex-wrap gap-2 mb-6">
             {(blog.tags || []).map((t: string) => (

@@ -9,6 +9,11 @@ import {
   SortableContext, verticalListSortingStrategy, useSortable, arrayMove,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
+import { useEditor, EditorContent } from "@tiptap/react"
+import StarterKit from "@tiptap/starter-kit"
+import TipTapLink from "@tiptap/extension-link"
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight"
+import { createLowlight } from "lowlight"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -16,8 +21,11 @@ import { Label } from "@/components/ui/label"
 import {
   Plus, Trash, Image as ImageIcon, PencilSimple, CaretDown, CaretRight,
   YoutubeLogo, Link as LinkIcon, Exam, DotsSixVertical, FloppyDisk,
-  CheckCircle, CaretLeft, MapTrifold, ArrowSquareOut, Video
+  CheckCircle, CaretLeft, MapTrifold, ArrowSquareOut, Video,
+  TextT, Code, MathOperations,
 } from "@phosphor-icons/react"
+
+const lowlight = createLowlight()
 
 function nanoidSimple() { return Math.random().toString(36).slice(2, 10) }
 
@@ -25,13 +33,237 @@ function nanoidSimple() { return Math.random().toString(36).slice(2, 10) }
 interface Problem { id: string; title: string; url: string; difficulty: "easy" | "medium" | "hard" }
 interface VideoItem { id: string; title: string; youtubeUrl: string }
 interface Resource { id: string; title: string; url: string; type: "article" | "doc" | "github" | "other" }
+
+type NoteBlockType = "text" | "code" | "image" | "math"
+interface NoteBlock { id: string; type: NoteBlockType; data: any }
+
 interface Topic {
-  id: string; title: string; description: string; notes: string; order: number;
+  id: string; title: string; description: string; notes: NoteBlock[] | string; order: number;
   problems: Problem[]; videos: VideoItem[]; resources: Resource[]; subtopics: Topic[]
 }
 
 function emptyTopic(order = 0): Topic {
-  return { id: nanoidSimple(), title: "", description: "", notes: "", order, problems: [], videos: [], resources: [], subtopics: [] }
+  return { id: nanoidSimple(), title: "", description: "", notes: [], order, problems: [], videos: [], resources: [], subtopics: [] }
+}
+
+// ─── Rich Text Editor (TipTap) ────────────────────────────────────────────────
+function RichTextEditor({ value, onChange }: { value: string; onChange: (html: string) => void }) {
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({ codeBlock: false }),
+      TipTapLink.configure({ openOnClick: false }),
+      CodeBlockLowlight.configure({ lowlight }),
+    ],
+    content: value || "",
+    onUpdate({ editor }) { onChange(editor.getHTML()) },
+    immediatelyRender: false,
+  })
+  if (!editor) return null
+  const btn = (action: () => boolean, label: string, active?: boolean) => (
+    <button type="button" onClick={() => { action(); editor.commands.focus() }}
+      className={`px-2 py-0.5 text-xs rounded transition-colors ${active ? "bg-primary text-white" : "bg-white/5 hover:bg-white/10 text-white/60"}`}>
+      {label}
+    </button>
+  )
+  return (
+    <div className="border border-white/10 rounded-xl overflow-hidden">
+      <div className="flex flex-wrap gap-1 p-2 border-b border-white/10 bg-white/[0.02]">
+        {btn(() => editor.chain().focus().toggleBold().run(), "B", editor.isActive("bold"))}
+        {btn(() => editor.chain().focus().toggleItalic().run(), "I", editor.isActive("italic"))}
+        {btn(() => editor.chain().focus().toggleStrike().run(), "S̶", editor.isActive("strike"))}
+        {btn(() => editor.chain().focus().toggleHeading({ level: 2 }).run(), "H2", editor.isActive("heading", { level: 2 }))}
+        {btn(() => editor.chain().focus().toggleHeading({ level: 3 }).run(), "H3", editor.isActive("heading", { level: 3 }))}
+        {btn(() => editor.chain().focus().toggleBulletList().run(), "• List", editor.isActive("bulletList"))}
+        {btn(() => editor.chain().focus().toggleOrderedList().run(), "1. List", editor.isActive("orderedList"))}
+        {btn(() => editor.chain().focus().toggleBlockquote().run(), '" Quote', editor.isActive("blockquote"))}
+        {btn(() => editor.chain().focus().toggleCodeBlock().run(), "</> Code", editor.isActive("codeBlock"))}
+      </div>
+      <EditorContent editor={editor}
+        className="min-h-[100px] max-h-[300px] overflow-y-auto p-3 text-white/80 text-sm prose prose-invert prose-sm max-w-none [&_.ProseMirror]:outline-none" />
+    </div>
+  )
+}
+
+// ─── Note Block Editors ───────────────────────────────────────────────────────
+function NoteTextEditor({ data, onChange }: { data: any; onChange: (d: any) => void }) {
+  return <RichTextEditor value={data.html || ""} onChange={(html) => onChange({ html })} />
+}
+
+function NoteCodeEditor({ data, onChange }: { data: any; onChange: (d: any) => void }) {
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <Input placeholder="Language (js, python, ts…)" value={data.language || ""} onChange={(e) => onChange({ ...data, language: e.target.value })} className="bg-white/5 border-white/10 text-white h-8 text-sm w-36" />
+        <Input placeholder="Filename (optional)" value={data.filename || ""} onChange={(e) => onChange({ ...data, filename: e.target.value })} className="bg-white/5 border-white/10 text-white h-8 text-sm flex-1" />
+      </div>
+      <Textarea rows={7} placeholder="Paste your code here…" value={data.code || ""} onChange={(e) => onChange({ ...data, code: e.target.value })}
+        className="font-mono text-xs bg-black/30 border-white/10 text-green-300 resize-y" />
+    </div>
+  )
+}
+
+function NoteImageEditor({ data, onChange }: { data: any; onChange: (d: any) => void }) {
+  const [uploading, setUploading] = React.useState(false)
+  const images: any[] = data.images || []
+  const upload = async (file: File) => {
+    setUploading(true)
+    const fd = new FormData(); fd.append("file", file)
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: fd })
+      const { url } = await res.json()
+      onChange({ ...data, images: [...images, { url, caption: "" }] })
+    } finally { setUploading(false) }
+  }
+  return (
+    <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-2">
+        {images.map((img: any, i: number) => (
+          <div key={i} className="border border-white/10 rounded-xl overflow-hidden">
+            <img src={img.url} className="w-full h-24 object-cover" alt="" />
+            <div className="p-1.5 space-y-1">
+              <Input size={12} placeholder="Caption" value={img.caption} onChange={(e) => { const next = [...images]; next[i] = { ...img, caption: e.target.value }; onChange({ ...data, images: next }) }} className="text-xs bg-transparent border-white/10 text-white/70 h-7" />
+              <button type="button" onClick={() => onChange({ ...data, images: images.filter((_: any, j: number) => j !== i) })} className="text-red-400/70 text-xs hover:text-red-400">Remove</button>
+            </div>
+          </div>
+        ))}
+        <label className={`border border-dashed border-white/10 rounded-xl h-24 flex items-center justify-center cursor-pointer hover:bg-white/5 transition-colors text-white/30 ${uploading ? "animate-pulse" : ""}`}>
+          <span className="text-xs">{uploading ? "Uploading…" : "+ Add Image"}</span>
+          <input type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
+        </label>
+      </div>
+      <div className="flex flex-wrap gap-3">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Align:</span>
+          {(["left","center","right"] as const).map(a => (
+            <button key={a} type="button" onClick={() => onChange({ ...data, alignment: a })} className={`text-[10px] px-1.5 py-0.5 rounded ${data.alignment === a ? "bg-primary text-white" : "bg-white/5 text-white/50"}`}>{a}</button>
+          ))}
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Size:</span>
+          {([
+            { value: "small",  label: "Small (25%)"  },
+            { value: "medium", label: "Medium (50%)" },
+            { value: "large",  label: "Large (75%)"  },
+            { value: "full",   label: "Full Width"   },
+          ] as const).map(({ value, label }) => (
+            <button key={value} type="button" onClick={() => onChange({ ...data, displaySize: value })}
+              className={`text-[10px] px-1.5 py-0.5 rounded ${(data.displaySize ?? "full") === value ? "bg-primary text-white" : "bg-white/5 text-white/50"}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function NoteMathEditor({ data, onChange }: { data: any; onChange: (d: any) => void }) {
+  return (
+    <div className="space-y-2">
+      <div className="text-[10px] text-white/30 uppercase tracking-widest font-bold">LaTeX / KaTeX formula</div>
+      <Textarea
+        rows={4}
+        placeholder={"Enter LaTeX math here:\n\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}"}
+        value={data.latex || ""}
+        onChange={(e) => onChange({ latex: e.target.value })}
+        className="font-mono text-xs bg-black/30 border-white/10 text-amber-200 resize-y"
+      />
+      {data.latex && (
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
+          <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold mb-2">Preview (rendered server-side)</p>
+          <code className="text-amber-200/80 text-xs font-mono">{data.latex}</code>
+        </div>
+      )}
+      <p className="text-[10px] text-white/25">Supports display math. Use <code className="text-white/40">$$…$$</code> or inline <code className="text-white/40">$…$</code> syntax in the rendered view.</p>
+    </div>
+  )
+}
+
+// ─── Sortable Note Block ──────────────────────────────────────────────────────
+function SortableNoteBlock({ block, onDelete, children }: { block: NoteBlock; onDelete: () => void; children: React.ReactNode }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block.id })
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }
+  const typeColors: Record<NoteBlockType, string> = {
+    text: "text-blue-400",
+    code: "text-green-400",
+    image: "text-pink-400",
+    math: "text-amber-400",
+  }
+  return (
+    <div ref={setNodeRef} style={style} className="group relative bg-white/[0.02] border border-white/[0.06] rounded-2xl p-3 hover:border-white/10 transition-all">
+      <div className="flex items-center gap-2 mb-2">
+        <button {...attributes} {...listeners} type="button" className="cursor-grab active:cursor-grabbing text-white/20 hover:text-white/60 p-0.5">
+          <DotsSixVertical className="w-4 h-4" />
+        </button>
+        <span className={`text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 bg-white/5 rounded ${typeColors[block.type]}`}>{block.type}</span>
+        <button type="button" onClick={onDelete} className="ml-auto p-1 text-white/20 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors">
+          <Trash className="w-3.5 h-3.5" />
+        </button>
+      </div>
+      {children}
+    </div>
+  )
+}
+
+// ─── Notes Block Editor ───────────────────────────────────────────────────────
+function NotesBlockEditor({ notes, onChange }: { notes: NoteBlock[]; onChange: (blocks: NoteBlock[]) => void }) {
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+  const safeNotes: NoteBlock[] = Array.isArray(notes) ? notes : []
+
+  const addBlock = (type: NoteBlockType) => {
+    const defaults: Record<NoteBlockType, any> = {
+      text: { html: "" },
+      code: { code: "", language: "python", filename: "" },
+      image: { images: [] },
+      math: { latex: "" },
+    }
+    onChange([...safeNotes, { id: nanoidSimple(), type, data: defaults[type] }])
+  }
+
+  const updateBlock = (id: string, data: any) =>
+    onChange(safeNotes.map(b => b.id === id ? { ...b, data } : b))
+  const removeBlock = (id: string) =>
+    onChange(safeNotes.filter(b => b.id !== id))
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (over && active.id !== over.id) {
+      const oi = safeNotes.findIndex(b => b.id === active.id)
+      const ni = safeNotes.findIndex(b => b.id === over.id)
+      onChange(arrayMove(safeNotes, oi, ni))
+    }
+  }
+
+  return (
+    <div className="space-y-2">
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={safeNotes.map(b => b.id)} strategy={verticalListSortingStrategy}>
+          {safeNotes.map(block => (
+            <SortableNoteBlock key={block.id} block={block} onDelete={() => removeBlock(block.id)}>
+              {block.type === "text" && <NoteTextEditor data={block.data} onChange={(d) => updateBlock(block.id, d)} />}
+              {block.type === "code" && <NoteCodeEditor data={block.data} onChange={(d) => updateBlock(block.id, d)} />}
+              {block.type === "image" && <NoteImageEditor data={block.data} onChange={(d) => updateBlock(block.id, d)} />}
+              {block.type === "math" && <NoteMathEditor data={block.data} onChange={(d) => updateBlock(block.id, d)} />}
+            </SortableNoteBlock>
+          ))}
+        </SortableContext>
+      </DndContext>
+
+      {/* Add block buttons */}
+      <div className="flex flex-wrap gap-1.5 pt-1">
+        {([
+          { type: "text" as const, icon: TextT, label: "Text" },
+          { type: "code" as const, icon: Code, label: "Code" },
+          { type: "image" as const, icon: ImageIcon, label: "Image" },
+          { type: "math" as const, icon: MathOperations, label: "Math" },
+        ]).map(({ type, icon: Icon, label }) => (
+          <button key={type} type="button" onClick={() => addBlock(type)}
+            className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] rounded-xl text-white/50 hover:text-white transition-all">
+            <Icon className="w-3.5 h-3.5" /> {label}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 // ─── Sortable Topic Row Wrapper ───────────────────────────────────────────────
@@ -55,7 +287,7 @@ function TopicNode({
   topic: Topic; depth?: number; onChange: (t: Topic) => void; onDelete: () => void; onAddSibling?: () => void
 }) {
   const [open, setOpen] = React.useState(depth === 0)
-  const [activeTab, setActiveTab] = React.useState<"details" | "content">("details")
+  const [activeTab, setActiveTab] = React.useState<"details" | "notes" | "content">("details")
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   const update = (patch: Partial<Topic>) => onChange({ ...topic, ...patch })
@@ -89,6 +321,7 @@ function TopicNode({
     }
   }
 
+  const notesBlocks: NoteBlock[] = Array.isArray(topic.notes) ? topic.notes : []
   const indentColor = ["border-primary/40", "border-secondary/40", "border-aws-orange/30", "border-white/10"][Math.min(depth, 3)]
 
   return (
@@ -129,25 +362,15 @@ function TopicNode({
 
           {/* Tabs */}
           <div className="flex gap-1 border-b border-white/[0.06]">
-            {(["details", "content"] as const).map(tab => (
+            {(["details", "notes", "content"] as const).map(tab => (
               <button key={tab} type="button" onClick={() => setActiveTab(tab)}
                 className={`text-xs px-3 py-1.5 -mb-px font-medium transition-colors capitalize ${activeTab === tab ? "border-b-2 border-primary text-primary" : "text-white/40 hover:text-white"}`}>
-                {tab === "details" ? "Notes" : "Problems & Videos"}
+                {tab === "details" ? "Problems & Videos" : tab === "notes" ? "📝 Notes (Rich)" : "Resources"}
               </button>
             ))}
           </div>
 
           {activeTab === "details" && (
-            <Textarea
-              value={topic.notes}
-              onChange={(e) => update({ notes: e.target.value })}
-              placeholder="Notes, tips, or extra context for learners…"
-              rows={3}
-              className="bg-white/[0.03] border-white/[0.06] text-white/60 text-sm resize-none font-mono"
-            />
-          )}
-
-          {activeTab === "content" && (
             <div className="space-y-4">
               {/* Problems */}
               <div className="space-y-2">
@@ -184,28 +407,36 @@ function TopicNode({
                   </div>
                 ))}
               </div>
+            </div>
+          )}
 
-              {/* Resources */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/30 flex items-center gap-1.5"><LinkIcon className="w-3.5 h-3.5" /> Resources</span>
-                  <button type="button" onClick={addResource} className="text-xs text-primary hover:text-primary/80 flex items-center gap-1"><Plus className="w-3 h-3" /> Add</button>
-                </div>
-                {topic.resources.map(r => (
-                  <div key={r.id} className="flex gap-2 items-center">
-                    <Input value={r.title} onChange={(e) => updateResource(r.id, { title: e.target.value })} placeholder="Resource name" className="w-36 bg-white/[0.03] border-white/[0.06] text-white text-xs h-8" />
-                    <Input value={r.url} onChange={(e) => updateResource(r.id, { url: e.target.value })} placeholder="https://…" className="flex-1 bg-white/[0.03] border-white/[0.06] text-white/60 text-xs h-8" />
-                    <select value={r.type} onChange={(e) => updateResource(r.id, { type: e.target.value as any })}
-                      className="bg-white/5 border border-white/[0.06] text-xs rounded-lg px-2 h-8 text-white/60">
-                      <option value="article">Article</option>
-                      <option value="doc">Docs</option>
-                      <option value="github">GitHub</option>
-                      <option value="other">Other</option>
-                    </select>
-                    <button type="button" onClick={() => deleteResource(r.id)} className="text-white/20 hover:text-red-400 transition-colors"><Trash className="w-3.5 h-3.5" /></button>
-                  </div>
-                ))}
+          {activeTab === "notes" && (
+            <NotesBlockEditor
+              notes={notesBlocks}
+              onChange={(blocks) => update({ notes: blocks })}
+            />
+          )}
+
+          {activeTab === "content" && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white/30 flex items-center gap-1.5"><LinkIcon className="w-3.5 h-3.5" /> Resources</span>
+                <button type="button" onClick={addResource} className="text-xs text-primary hover:text-primary/80 flex items-center gap-1"><Plus className="w-3 h-3" /> Add</button>
               </div>
+              {topic.resources.map(r => (
+                <div key={r.id} className="flex gap-2 items-center">
+                  <Input value={r.title} onChange={(e) => updateResource(r.id, { title: e.target.value })} placeholder="Resource name" className="w-36 bg-white/[0.03] border-white/[0.06] text-white text-xs h-8" />
+                  <Input value={r.url} onChange={(e) => updateResource(r.id, { url: e.target.value })} placeholder="https://…" className="flex-1 bg-white/[0.03] border-white/[0.06] text-white/60 text-xs h-8" />
+                  <select value={r.type} onChange={(e) => updateResource(r.id, { type: e.target.value as any })}
+                    className="bg-white/5 border border-white/[0.06] text-xs rounded-lg px-2 h-8 text-white/60">
+                    <option value="article">Article</option>
+                    <option value="doc">Docs</option>
+                    <option value="github">GitHub</option>
+                    <option value="other">Other</option>
+                  </select>
+                  <button type="button" onClick={() => deleteResource(r.id)} className="text-white/20 hover:text-red-400 transition-colors"><Trash className="w-3.5 h-3.5" /></button>
+                </div>
+              ))}
             </div>
           )}
 
@@ -238,6 +469,7 @@ function TopicNode({
     </div>
   )
 }
+
 
 // ─── Track Card ───────────────────────────────────────────────────────────────
 function TrackCard({ track, onEdit, onDelete }: { track: any; onEdit: () => void; onDelete: () => void }) {
@@ -412,7 +644,7 @@ export default function AdminTracks() {
 
             <div>
               <Label className="text-white/40 text-xs mb-2 block">Cover Image *</Label>
-              <label className="block w-full h-36 border border-dashed border-white/10 rounded-xl overflow-hidden cursor-pointer hover:bg-white/5 transition-colors">
+              <label className="relative block w-full h-36 border border-dashed border-white/10 rounded-xl overflow-hidden cursor-pointer hover:bg-white/5 transition-colors">
                 {image
                   ? <Image src={image} fill className="object-cover" alt="" />
                   : <div className="flex flex-col items-center justify-center h-full gap-2 text-white/30"><ImageIcon className="w-7 h-7" /><span className="text-xs">{uploadingImage ? "Uploading…" : "Upload image"}</span></div>

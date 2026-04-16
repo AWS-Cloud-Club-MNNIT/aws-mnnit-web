@@ -134,10 +134,10 @@ function EventCard({ event }: EventCardProps) {
             <MapPin className="w-4 h-4 text-aws-orange flex-shrink-0" />
             <span>{event.location || "MNNIT Allahabad"}</span>
           </div>
-          {event.sections?.length > 0 && (
+          {(event.sections?.length ?? 0) > 0 && (
             <div className="flex items-center gap-2.5">
               <Users className="w-4 h-4 text-primary flex-shrink-0" />
-              <span>{event.sections.length} section{event.sections.length !== 1 ? "s" : ""}</span>
+              <span>{event.sections!.length} section{event.sections!.length !== 1 ? "s" : ""}</span>
             </div>
           )}
         </div>

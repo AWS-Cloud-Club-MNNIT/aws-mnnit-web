@@ -213,7 +213,7 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
 
       // QR code image
       await new Promise<void>((resolve) => {
-        const qrImg = new Image();
+        const qrImg = new window.Image();
         qrImg.onload = () => {
           const qrSize = 186;
           const qrX = RX + (RW - qrSize) / 2;
